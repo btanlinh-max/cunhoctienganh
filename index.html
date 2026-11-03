@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2447E8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Cụm từ"></head><body>
+<title>Sổ tay cụm từ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: một cột hẹp như trang vở bài tập; câu tiếng Việt lớn ở trên, chỗ trống tô vàng như vệt bút dạ quang ở dưới. */
+:root{
+  --bg:#EDF0F6; --card:#FFFFFF; --fg:#0F1A2E; --mute:#5A6781; --line:#D6DCE8;
+  --accent:#2447E8; --accent-ink:#FFFFFF; --hi:#FFE066; --hi-ink:#3A2E00;
+  --good:#0E8A5C; --good-bg:#E0F4EC; --bad:#CC3040; --bad-bg:#FCE7EA;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1120; --card:#141C30; --fg:#E8EDF8; --mute:#93A0BC; --line:#26314A;
+  --accent:#8AA4FF; --accent-ink:#0B1120; --hi:#F2C94C; --hi-ink:#2E2400;
+  --good:#3DD6A0; --good-bg:#10332A; --bad:#FF7B86; --bad-bg:#3A1A21; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1120; --card:#141C30; --fg:#E8EDF8; --mute:#93A0BC; --line:#26314A;
+  --accent:#8AA4FF; --accent-ink:#0B1120; --hi:#F2C94C; --hi-ink:#2E2400;
+  --good:#3DD6A0; --good-bg:#10332A; --bad:#FF7B86; --bad-bg:#3A1A21; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.55 var(--f-body);
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#app{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-size:1.5rem;line-height:1.15;font-weight:800;margin:0;text-wrap:balance}
+h2{font-size:1rem;font-weight:700;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.mute{color:var(--mute)}
+.small{font-size:.8125rem}
+.mono{font-family:var(--f-mono)}
+.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink);min-height:46px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.btn.block{width:100%}
+.btn.text{background:none;color:var(--mute);padding:8px 10px;min-height:0;font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tab{border:0;background:none;border-radius:9px;padding:9px 6px;font-weight:500;color:var(--mute)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.streak{font-family:var(--f-mono);font-weight:700;font-size:.875rem;border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--card)}
+.big{font-size:2.75rem;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;flex:1;min-width:60px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.good i{background:var(--good)}
+.sets{display:flex;flex-direction:column;gap:12px}
+.set{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.set .bar{grid-column:1/-1}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.8125rem;color:var(--mute)}
+/* session */
+.top{display:flex;gap:12px;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:6px;padding:2px 8px;color:var(--mute)}
+.chip.form{color:var(--accent);border-color:var(--accent)}
+.chip.warn{color:var(--bad);border-color:var(--bad)}
+.vi{font-size:1.375rem;line-height:1.35;font-weight:700;text-wrap:balance}
+.en{font-family:var(--f-mono);font-size:1.0625rem;line-height:1.9;overflow-wrap:anywhere}
+.blank{display:inline-block;min-width:5.5em;height:1.25em;vertical-align:text-bottom;background:var(--hi);border-radius:4px;margin:0 2px}
+mark{background:var(--hi);color:var(--hi-ink);border-radius:4px;padding:1px 5px;font-weight:700}
+.v1{font-family:var(--f-mono);font-size:2rem;font-weight:700}
+.fields{display:flex;flex-direction:column;gap:10px}
+.f{display:flex;align-items:center;gap:10px}
+.lb{font-family:var(--f-mono);font-weight:700;color:var(--mute);min-width:2.2em}
+input.ans{flex:1;min-width:0;width:100%;font:500 1.0625rem var(--f-mono);color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:12px 14px}
+input.ans:focus{border-color:var(--accent);outline:none}
+input.ans.ok{border-color:var(--good);background:var(--good-bg)}
+input.ans.no{border-color:var(--bad);background:var(--bad-bg)}
+.fb{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.fb.ok{background:var(--good-bg)}
+.fb.no{background:var(--bad-bg)}
+.fb b.t{font-weight:800}
+.fb.ok b.t{color:var(--good)}
+.fb.no b.t{color:var(--bad)}
+.trap{border-left:4px solid var(--hi);padding:4px 0 4px 12px}
+.list{display:flex;flex-direction:column}
+.item{padding:12px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.item:first-child{border-top:0}
+input.search{width:100%;font:inherit;color:var(--fg);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 16px}
+summary{cursor:pointer;padding:12px 0;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:8px}
+summary::-webkit-details-marker{display:none}
+.pill{font-family:var(--f-mono);font-size:.75rem;border-radius:99px;padding:1px 8px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.pill.bad{color:var(--bad);border-color:var(--bad)}
+.pill.good{color:var(--good);border-color:var(--good)}
+.empty{text-align:center;color:var(--mute);padding:28px 8px}
+footer{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--mute)}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .25s ease}}
+@media (max-width:420px){.vi{font-size:1.25rem}.big{font-size:2.25rem}}
+</style>
+
+<div id="app"><p class="empty">Đang tải…</p></div>
+
+<script>
+(function(){
+"use strict";
+var DATA={"A":{"title":"Động từ + giới từ / tiểu từ","order":1,"items":[{"id":"A01","t":"p","ph":"look at","vi":"Nhìn chiếc váy này đi!","en":"___ this dress!","a":["Look at"],"tag":"mệnh lệnh","trap":"look at = nhìn vào. Không dùng look to / look on.","set":"A","added":"2026-11-03"},{"id":"A02","t":"p","ph":"look for","vi":"Cô ấy đang tìm chìa khóa của mình.","en":"She ___ her keys.","a":["is looking for"],"tag":"hiện tại tiếp diễn","trap":"look at = nhìn, look for = tìm. Lỗi hay gặp: nhầm hai cụm này.","set":"A","added":"2026-11-03"},{"id":"A03","t":"p","ph":"look after","vi":"Cô ấy chăm sóc em bé.","en":"She ___ her baby.","a":["looks after"],"tag":"hiện tại đơn","trap":"look after = chăm sóc (giống take care of).","set":"A","added":"2026-11-03"},{"id":"A04","t":"p","ph":"wait for","vi":"Tôi đã đợi chồng tôi.","en":"I ___ my husband.","a":["waited for"],"tag":"quá khứ đơn","trap":"wait luôn đi với for. Không viết wait my husband / wait to.","set":"A","added":"2026-11-03"},{"id":"A05","t":"p","ph":"talk to / talk with","vi":"Tôi đã nói chuyện với mẹ.","en":"I ___ my mother.","a":["talked to","talked with"],"tag":"quá khứ đơn","trap":"Không viết talk my mother. talk about mới là nói về.","set":"A","added":"2026-11-03"},{"id":"A06","t":"p","ph":"listen to","vi":"Hãy nghe giáo viên nói.","en":"___ the teacher.","a":["Listen to"],"tag":"mệnh lệnh","trap":"listen luôn có to. hear thì không cần to.","set":"A","added":"2026-11-03"},{"id":"A07","t":"p","ph":"speak to / with","vi":"Tôi nói chuyện với bạn một chút được không?","en":"Can I ___ you?","a":["speak to","speak with"],"tag":"nguyên mẫu","trap":"speak + to/with, không để trống.","set":"A","added":"2026-11-03"},{"id":"A08","t":"p","ph":"talk about","vi":"Chúng tôi đã nói về công việc.","en":"We ___ work.","a":["talked about"],"tag":"quá khứ đơn","trap":"nói về = talk about. Không dùng talk of / talk on.","set":"A","added":"2026-11-03"},{"id":"A09","t":"p","ph":"think about","vi":"Tôi đang nghĩ về tương lai của mình.","en":"I ___ my future.","a":["am thinking about"],"tag":"hiện tại tiếp diễn","trap":"think about = nghĩ về. Không viết think of ở đây.","set":"A","added":"2026-11-03"},{"id":"A10","t":"p","ph":"worry about","vi":"Đừng lo cho tôi.","en":"Don't ___ me.","a":["worry about"],"tag":"nguyên mẫu","trap":"worry about + người/việc. Không viết worry for / worry of.","set":"A","added":"2026-11-03"},{"id":"A11","t":"p","ph":"ask for","vi":"Cô ấy đã xin giúp đỡ.","en":"She ___ help.","a":["asked for"],"tag":"quá khứ đơn","trap":"ask for = xin, yêu cầu. Không viết ask help.","set":"A","added":"2026-11-03"},{"id":"A12","t":"p","ph":"pay for","vi":"Tôi đã trả tiền cho cái áo.","en":"I ___ the shirt.","a":["paid for"],"tag":"quá khứ đơn","trap":"pay for + món hàng. Không viết paid the shirt. Nhớ: pay-paid-paid.","set":"A","added":"2026-11-03"},{"id":"A13","t":"p","ph":"arrive at","vi":"Tôi đã đến chỗ làm.","en":"I ___ work.","a":["arrived at"],"tag":"quá khứ đơn","trap":"arrive at = nơi cụ thể. Không viết arrive to.","set":"A","added":"2026-11-03"},{"id":"A14","t":"p","ph":"arrive in","vi":"Cô ấy đã đến Hà Nội.","en":"She ___ Hanoi.","a":["arrived in"],"tag":"quá khứ đơn","trap":"arrive in = thành phố/nước. Không viết arrive to.","set":"A","added":"2026-11-03"},{"id":"A15","t":"p","ph":"get to","vi":"Tôi đến chỗ làm lúc tám giờ.","en":"I ___ work at eight.","a":["got to"],"tag":"quá khứ đơn","trap":"get to + nơi chốn. Không thêm at/in sau get.","set":"A","added":"2026-11-03"},{"id":"A16","t":"p","ph":"go home / get home","vi":"Tôi về đến nhà muộn.","en":"I ___ late.","a":["got home"],"tag":"quá khứ đơn","trap":"home không cần to: get home, go home. Không viết got to home.","set":"A","added":"2026-11-03"},{"id":"A17","t":"p","ph":"go back to","vi":"Tôi đã quay lại quê.","en":"I ___ my hometown.","a":["went back to"],"tag":"quá khứ đơn","trap":"go back to + nơi chốn. Không viết go back at / go back in.","set":"A","added":"2026-11-03"},{"id":"A18","t":"p","ph":"come from","vi":"Anh ấy đến từ Việt Nam.","en":"He ___ Vietnam.","a":["comes from"],"tag":"hiện tại đơn","trap":"comes (có s) + from. Không viết come to.","set":"A","added":"2026-11-03"},{"id":"A19","t":"p","ph":"depend on","vi":"Nó phụ thuộc vào thời tiết.","en":"It ___ the weather.","a":["depends on"],"tag":"hiện tại đơn","trap":"depend on, không viết depend of / depend in.","set":"A","added":"2026-11-03"},{"id":"A20","t":"p","ph":"belong to","vi":"Chiếc túi này là của tôi (thuộc về tôi).","en":"This bag ___ me.","a":["belongs to"],"tag":"hiện tại đơn","trap":"belong + to. Không dùng dạng -ing.","set":"A","added":"2026-11-03"},{"id":"A21","t":"p","ph":"agree with","vi":"Tôi đồng ý với bạn.","en":"I ___ you.","a":["agree with"],"tag":"hiện tại đơn","trap":"agree with + người. Không viết am agree.","set":"A","added":"2026-11-03"},{"id":"A22","t":"p","ph":"prepare for","vi":"Tôi đã chuẩn bị cho buổi phỏng vấn.","en":"I ___ the interview.","a":["prepared for"],"tag":"quá khứ đơn","trap":"prepare for + sự kiện. Không viết prepare to.","set":"A","added":"2026-11-03"},{"id":"A23","t":"p","ph":"look forward to + V-ing","vi":"Tôi mong được gặp bạn.","en":"I ___ you.","a":["look forward to seeing"],"tag":"hiện tại đơn","trap":"to ở đây là giới từ, nên theo sau là V-ing: seeing, không phải see.","set":"A","added":"2026-11-03"},{"id":"A24","t":"p","ph":"call somebody","vi":"Cô ấy đã gọi điện cho tôi.","en":"She ___.","a":["called me"],"tag":"quá khứ đơn","trap":"call + người, không có to. 'called to me' nghĩa là gọi to về phía tôi.","set":"A","added":"2026-11-03"},{"id":"A25","t":"p","ph":"call somebody on the phone","vi":"Anh ấy đã gọi điện thoại cho tôi.","en":"He ___.","a":["called me on the phone"],"tag":"quá khứ đơn","trap":"on the phone, không viết by phone / with phone.","set":"A","added":"2026-11-03"},{"id":"A26","t":"p","ph":"call for somebody","vi":"Quản lý đã gọi tôi đến (yêu cầu gặp tôi).","en":"The manager ___.","a":["called for me"],"tag":"quá khứ đơn","trap":"call for = gọi/yêu cầu ai đến, hoặc đến đón. Khác với call somebody.","set":"A","added":"2026-11-03"},{"id":"A27","t":"p","ph":"call somebody back","vi":"Tôi sẽ gọi lại cho bạn.","en":"I will ___.","a":["call you back"],"tag":"tương lai","trap":"Đại từ đứng giữa: call you back. Không viết call back you.","set":"A","added":"2026-11-03"},{"id":"A28","t":"p","ph":"put on","vi":"Hãy mặc áo khoác vào.","en":"___ your coat.","a":["Put on"],"tag":"mệnh lệnh","trap":"put on = hành động mặc vào. wear = đang mặc.","set":"A","added":"2026-11-03"},{"id":"A29","t":"p","ph":"take off","vi":"Hãy cởi giày ra.","en":"___ your shoes.","a":["Take off"],"tag":"mệnh lệnh","trap":"take off = cởi ra. Không viết take out.","set":"A","added":"2026-11-03"},{"id":"A30","t":"p","ph":"try on","vi":"Tôi mặc thử chiếc áo khoác này được không?","en":"Can I ___ this jacket?","a":["try on"],"tag":"nguyên mẫu","trap":"try on = mặc thử. Không viết try wear.","set":"A","added":"2026-11-03"},{"id":"A31","t":"p","ph":"match + noun","vi":"Chiếc thắt lưng này hợp với đôi giày kia.","en":"This belt ___.","a":["matches those shoes"],"tag":"hiện tại đơn","trap":"match không cần with. shoes là số nhiều nên dùng those.","set":"A","added":"2026-11-03"},{"id":"A32","t":"p","ph":"go out","vi":"Chúng tôi đi chơi vào cuối tuần.","en":"We ___ on weekends.","a":["go out"],"tag":"hiện tại đơn","trap":"go out = đi chơi / ra ngoài.","set":"A","added":"2026-11-03"},{"id":"A33","t":"p","ph":"get up","vi":"Tôi đã dậy muộn.","en":"I ___ late.","a":["got up"],"tag":"quá khứ đơn","trap":"get up = ra khỏi giường. wake up = tỉnh dậy.","set":"A","added":"2026-11-03"},{"id":"A34","t":"p","ph":"give up","vi":"Tôi không bao giờ bỏ cuộc.","en":"I never ___.","a":["give up"],"tag":"hiện tại đơn","trap":"never + động từ nguyên mẫu, không chia.","set":"A","added":"2026-11-03"},{"id":"A35","t":"p","ph":"grow up","vi":"Cô ấy lớn lên ở Hà Nội.","en":"She ___ in Hanoi.","a":["grew up"],"tag":"quá khứ đơn","trap":"grow-grew-grown. Ở đây là quá khứ đơn: grew.","set":"A","added":"2026-11-03"},{"id":"A36","t":"p","ph":"find out","vi":"Tôi đã phát hiện ra sự thật.","en":"I ___ the truth.","a":["found out"],"tag":"quá khứ đơn","trap":"find out = tìm ra, phát hiện. find-found-found.","set":"A","added":"2026-11-03"},{"id":"A37","t":"p","ph":"pick up","vi":"Tôi đã đón con gái.","en":"I ___ my daughter.","a":["picked up"],"tag":"quá khứ đơn","trap":"pick up = nhặt lên / đón.","set":"A","added":"2026-11-03"},{"id":"A38","t":"p","ph":"turn off","vi":"Hãy tắt đèn đi.","en":"___ the light.","a":["Turn off"],"tag":"mệnh lệnh","trap":"turn off = tắt.","set":"A","added":"2026-11-03"},{"id":"A39","t":"p","ph":"turn on","vi":"Hãy bật quạt lên.","en":"___ the fan.","a":["Turn on"],"tag":"mệnh lệnh","trap":"turn on = bật.","set":"A","added":"2026-11-03"}]},"B":{"title":"Cụm cố định và kết hợp từ","order":2,"items":[{"id":"B01","t":"p","ph":"a pair of gloves","vi":"Cô ấy đã mua một đôi găng tay.","en":"She bought ___.","a":["a pair of gloves"],"tag":"quá khứ đơn","trap":"a pair of + danh từ số nhiều: gloves, không phải glove.","set":"B","added":"2026-11-03"},{"id":"B02","t":"p","ph":"a pair of shoes","vi":"Tôi đã mua một đôi giày.","en":"I bought ___.","a":["a pair of shoes"],"tag":"quá khứ đơn","trap":"a pair of shoes, không viết a shoes / a shoe pair.","set":"B","added":"2026-11-03"},{"id":"B03","t":"p","ph":"those shoes","vi":"Đôi giày kia màu đen.","en":"___ black.","a":["Those shoes are"],"tag":"hiện tại đơn","trap":"shoes là số nhiều: those shoes are. Không viết that shoes / this shoes is.","set":"B","added":"2026-11-03"},{"id":"B04","t":"p","ph":"a scarf","vi":"Cô ấy đang quàng một chiếc khăn.","en":"She is wearing ___.","a":["a scarf"],"tag":"hiện tại tiếp diễn","trap":"một cái thì có a.","set":"B","added":"2026-11-03"},{"id":"B05","t":"p","ph":"scarves","vi":"Cô ấy có ba chiếc khăn quàng.","en":"She has three ___.","a":["scarves"],"tag":"số nhiều","trap":"scarf đổi f thành ves: scarves.","set":"B","added":"2026-11-03"},{"id":"B06","t":"p","ph":"a suit","vi":"Anh ấy đã mặc một bộ vest.","en":"He wore ___.","a":["a suit"],"tag":"quá khứ đơn","trap":"wear-wore-worn. a suit = bộ vest.","set":"B","added":"2026-11-03"},{"id":"B07","t":"p","ph":"a job interview","vi":"Cô ấy đã đi phỏng vấn xin việc.","en":"She went to ___.","a":["a job interview"],"tag":"quá khứ đơn","trap":"job interview = buổi phỏng vấn xin việc, có a.","set":"B","added":"2026-11-03"},{"id":"B08","t":"p","ph":"wear glasses","vi":"Tôi đeo kính.","en":"I ___.","a":["wear glasses"],"tag":"hiện tại đơn","trap":"glasses luôn số nhiều, không có a. Dùng wear, không dùng use.","set":"B","added":"2026-11-03"},{"id":"B09","t":"p","ph":"brush my teeth","vi":"Tôi đánh răng hai lần một ngày.","en":"I ___ twice a day.","a":["brush my teeth"],"tag":"hiện tại đơn","trap":"brush my teeth, teeth là số nhiều của tooth. Không dùng wash/clean.","set":"B","added":"2026-11-03"},{"id":"B10","t":"p","ph":"cut my nails","vi":"Tôi cắt móng tay mỗi tuần.","en":"I ___ every week.","a":["cut my nails"],"tag":"hiện tại đơn","trap":"cut my nails. Không dùng cut my fingers.","set":"B","added":"2026-11-03"},{"id":"B11","t":"p","ph":"weigh + number + at birth","vi":"Lúc sinh cô bé nặng 3 kg.","en":"She ___.","a":["weighed 3 kg at birth"],"tag":"quá khứ đơn","trap":"weigh là động từ: weighed 3 kg. Không viết was 3 kg weight.","set":"B","added":"2026-11-03"},{"id":"B12","t":"p","ph":"How much did ... weigh at birth?","vi":"Lúc sinh cô bé nặng bao nhiêu?","en":"___?","a":["How much did she weigh at birth"],"tag":"câu hỏi, quá khứ đơn","trap":"did + weigh (nguyên mẫu), không viết did weighed.","set":"B","added":"2026-11-03"},{"id":"B13","t":"p","ph":"How heavy was ...?","vi":"Em bé nặng bao nhiêu?","en":"___?","a":["How heavy was the baby"],"tag":"câu hỏi, quá khứ đơn","trap":"How heavy + was. Không viết how much heavy.","set":"B","added":"2026-11-03"},{"id":"B14","t":"p","ph":"be born on + date","vi":"Cô ấy sinh ngày 6 tháng 5.","en":"She ___ May 6.","a":["was born on"],"tag":"quá khứ đơn","trap":"be born luôn đi với was/were. Có ngày cụ thể thì dùng on.","set":"B","added":"2026-11-03"},{"id":"B15","t":"p","ph":"be born in + month/year","vi":"Anh ấy sinh năm 2020.","en":"He ___ 2020.","a":["was born in"],"tag":"quá khứ đơn","trap":"năm/tháng dùng in. Không viết born at.","set":"B","added":"2026-11-03"},{"id":"B16","t":"p","ph":"get married","vi":"Cô ấy đã kết hôn vào năm 2022.","en":"She ___ in 2022.","a":["got married"],"tag":"quá khứ đơn","trap":"get married = hành động kết hôn. Không viết married with / married to ở đây.","set":"B","added":"2026-11-03"},{"id":"B17","t":"p","ph":"be married","vi":"Cô ấy đã có gia đình.","en":"She ___.","a":["is married"],"tag":"hiện tại đơn","trap":"be married = trạng thái đã kết hôn.","set":"B","added":"2026-11-03"},{"id":"B18","t":"p","ph":"be widowed","vi":"Cô ấy góa chồng từ khi còn trẻ.","en":"She ___ young.","a":["was widowed"],"tag":"quá khứ đơn","trap":"be widowed là bị động: was widowed.","set":"B","added":"2026-11-03"},{"id":"B19","t":"p","ph":"be separated","vi":"Họ đang ly thân.","en":"They ___.","a":["are separated"],"tag":"hiện tại đơn","trap":"be separated = ly thân.","set":"B","added":"2026-11-03"},{"id":"B20","t":"p","ph":"a wedding was held","vi":"Đám cưới đã được tổ chức tại nhà.","en":"The wedding ___ at home.","a":["was held"],"tag":"quá khứ đơn","trap":"bị động: was held. hold-held-held.","set":"B","added":"2026-11-03"},{"id":"B21","t":"p","ph":"die of","vi":"Ông ấy qua đời vì đau tim.","en":"He ___ a heart attack.","a":["died of"],"tag":"quá khứ đơn","trap":"die of + nguyên nhân. Không viết die by.","set":"B","added":"2026-11-03"},{"id":"B22","t":"p","ph":"spend time with somebody","vi":"Tôi dành thời gian bên gia đình.","en":"I ___ my family.","a":["spend time with"],"tag":"hiện tại đơn","trap":"spend time with + người. Không viết spend time to.","set":"B","added":"2026-11-03"},{"id":"B23","t":"p","ph":"spend time + V-ing","vi":"Tôi đã dành thời gian nói chuyện với cô ấy.","en":"I ___ to her.","a":["spent time talking"],"tag":"quá khứ đơn","trap":"spend time + V-ing. Không viết spent time to talk.","set":"B","added":"2026-11-03"},{"id":"B24","t":"p","ph":"take care of","vi":"Tôi chăm sóc các con.","en":"I ___ my children.","a":["take care of"],"tag":"hiện tại đơn","trap":"take care of + người. Không viết take care for.","set":"B","added":"2026-11-03"},{"id":"B25","t":"p","ph":"make friends with","vi":"Cô ấy kết bạn với những người khác.","en":"She ___ others.","a":["makes friends with"],"tag":"hiện tại đơn","trap":"friends luôn số nhiều: make friends with.","set":"B","added":"2026-11-03"},{"id":"B26","t":"p","ph":"be in a hurry","vi":"Lúc đó tôi đang vội.","en":"I ___.","a":["was in a hurry"],"tag":"quá khứ đơn","trap":"be in a hurry. Không viết be hurry.","set":"B","added":"2026-11-03"},{"id":"B27","t":"p","ph":"arrive late","vi":"Cô ấy đã đến muộn.","en":"She ___.","a":["arrived late"],"tag":"quá khứ đơn","trap":"arrive late, không thêm at/in.","set":"B","added":"2026-11-03"},{"id":"B28","t":"p","ph":"on time","vi":"Tôi đến chỗ làm đúng giờ.","en":"I got to work ___.","a":["on time"],"tag":"cụm trạng từ","trap":"on time = đúng giờ. in time = kịp lúc.","set":"B","added":"2026-11-03"},{"id":"B29","t":"p","ph":"every day","vi":"Tôi học mỗi ngày.","en":"I study ___.","a":["every day"],"tag":"cụm trạng từ, viết rời","trap":"every day (2 chữ) = mỗi ngày. everyday (1 chữ) = hằng ngày, dùng trước danh từ.","set":"B","added":"2026-11-03"},{"id":"B30","t":"p","ph":"everyday + noun","vi":"Tôi mặc quần áo hằng ngày.","en":"I wear ___ clothes.","a":["everyday"],"tag":"tính từ, viết liền","trap":"everyday viết liền khi đứng trước danh từ.","set":"B","added":"2026-11-03"},{"id":"B31","t":"p","ph":"today","vi":"Hôm nay tôi bận.","en":"___ I am busy.","a":["Today"],"tag":"trạng từ","trap":"today không có in/on/at đứng trước.","set":"B","added":"2026-11-03"},{"id":"B32","t":"p","ph":"yesterday","vi":"Hôm qua tôi ở nhà.","en":"___ I stayed at home.","a":["Yesterday"],"tag":"trạng từ","trap":"yesterday dùng với quá khứ đơn. Không có in/on đứng trước.","set":"B","added":"2026-11-03"},{"id":"B33","t":"p","ph":"tomorrow","vi":"Ngày mai tôi sẽ đi làm.","en":"___ I will go to work.","a":["Tomorrow"],"tag":"trạng từ","trap":"tomorrow dùng với tương lai. Không có in/on đứng trước.","set":"B","added":"2026-11-03"},{"id":"B34","t":"p","ph":"at home","vi":"Tôi đã ở nhà.","en":"I stayed ___.","a":["at home"],"tag":"cụm trạng từ","trap":"at home. Không viết in home / in the home.","set":"B","added":"2026-11-03"},{"id":"B35","t":"p","ph":"in the countryside","vi":"Họ sống ở nông thôn.","en":"They live ___.","a":["in the countryside"],"tag":"cụm trạng từ","trap":"in the countryside, có the.","set":"B","added":"2026-11-03"},{"id":"B36","t":"p","ph":"at the supermarket","vi":"Tôi đã gặp cô ấy ở siêu thị.","en":"I met her ___.","a":["at the supermarket"],"tag":"cụm trạng từ","trap":"at + địa điểm thông thường. Nhớ the.","set":"B","added":"2026-11-03"},{"id":"B37","t":"p","ph":"on weekends / at weekends","vi":"Chúng tôi đi chơi vào cuối tuần.","en":"We go out ___.","a":["on weekends","at weekends"],"tag":"cụm trạng từ","trap":"weekends có s khi nói chung chung, lặp lại.","set":"B","added":"2026-11-03"},{"id":"B38","t":"p","ph":"twice a day","vi":"Tôi uống thuốc hai lần một ngày.","en":"I take medicine ___.","a":["twice a day"],"tag":"cụm trạng từ","trap":"twice a day. Không viết two times in a day.","set":"B","added":"2026-11-03"}]},"C":{"title":"Cấu trúc động từ và tính từ","order":3,"items":[{"id":"C01","t":"p","ph":"prefer V-ing to V-ing","vi":"Tôi thích mặc quần jeans hơn mặc váy.","en":"I prefer ___ dresses.","a":["wearing jeans to wearing"],"tag":"hiện tại đơn","trap":"prefer A to B, không dùng than. Cả hai vế đều là V-ing.","set":"C","added":"2026-11-03"},{"id":"C02","t":"p","ph":"enjoy + V-ing","vi":"Cô ấy thích đọc sách.","en":"She ___.","a":["enjoys reading"],"tag":"hiện tại đơn","trap":"enjoy + V-ing. Không viết enjoy to read.","set":"C","added":"2026-11-03"},{"id":"C03","t":"p","ph":"practice + V-ing","vi":"Tôi luyện nói tiếng Anh.","en":"I ___ English.","a":["practice speaking"],"tag":"hiện tại đơn","trap":"practice + V-ing. Không viết practice to speak.","set":"C","added":"2026-11-03"},{"id":"C04","t":"p","ph":"be busy + V-ing","vi":"Tôi đang bận nấu ăn.","en":"I ___.","a":["am busy cooking"],"tag":"hiện tại đơn","trap":"busy + V-ing, không có at/in/to.","set":"C","added":"2026-11-03"},{"id":"C05","t":"p","ph":"be scared of + V-ing","vi":"Tôi sợ mắc lỗi.","en":"I ___ mistakes.","a":["am scared of making"],"tag":"hiện tại đơn","trap":"scared of + V-ing. Sau of không dùng to. Chú ý: make a mistake.","set":"C","added":"2026-11-03"},{"id":"C06","t":"p","ph":"be proud of","vi":"Tôi tự hào về bản thân.","en":"I ___ myself.","a":["am proud of"],"tag":"hiện tại đơn","trap":"proud of, không viết proud about / proud with.","set":"C","added":"2026-11-03"},{"id":"C07","t":"p","ph":"be satisfied with","vi":"Cô ấy hài lòng với công việc của mình.","en":"She ___ her work.","a":["is satisfied with"],"tag":"hiện tại đơn","trap":"satisfied with, không viết satisfied of.","set":"C","added":"2026-11-03"},{"id":"C08","t":"p","ph":"be good at + V-ing","vi":"Anh ấy vẽ giỏi.","en":"He ___.","a":["is good at drawing"],"tag":"hiện tại đơn","trap":"good at + V-ing. Không viết good in / good on.","set":"C","added":"2026-11-03"},{"id":"C09","t":"p","ph":"want to V","vi":"Tôi muốn học tiếng Anh.","en":"I ___ English.","a":["want to learn"],"tag":"hiện tại đơn","trap":"want + to + V. Không viết want learn.","set":"C","added":"2026-11-03"},{"id":"C10","t":"p","ph":"tell somebody to V","vi":"Anh ấy bảo tôi nghỉ ngơi.","en":"He ___.","a":["told me to rest"],"tag":"quá khứ đơn","trap":"tell + O + to V. tell-told-told.","set":"C","added":"2026-11-03"},{"id":"C11","t":"p","ph":"help somebody (to) V","vi":"Cô ấy đã giúp tôi nấu ăn.","en":"She ___.","a":["helped me cook","helped me to cook"],"tag":"quá khứ đơn","trap":"help + O + V hoặc to V đều được.","set":"C","added":"2026-11-03"},{"id":"C12","t":"p","ph":"let somebody + V","vi":"Chồng tôi cho tôi nghỉ ngơi.","en":"My husband ___.","a":["let me rest"],"tag":"quá khứ đơn","trap":"let + O + V nguyên mẫu, không có to. let-let-let.","set":"C","added":"2026-11-03"},{"id":"C13","t":"p","ph":"make somebody + V","vi":"Tin đó đã làm tôi khóc.","en":"The news ___.","a":["made me cry"],"tag":"quá khứ đơn","trap":"make + O + V nguyên mẫu, không có to. make-made-made.","set":"C","added":"2026-11-03"},{"id":"C14","t":"p","ph":"make somebody feel + adj","vi":"Điều đó làm tôi cảm thấy bình yên.","en":"It ___.","a":["made me feel peaceful"],"tag":"quá khứ đơn","trap":"make + O + feel + tính từ.","set":"C","added":"2026-11-03"},{"id":"C15","t":"p","ph":"too + adj + to V","vi":"Chiếc áo khoác này quá dày để mặc.","en":"This coat is ___.","a":["too thick to wear"],"tag":"hiện tại đơn","trap":"too + adj + to V. Không viết for wear, không thêm not.","set":"C","added":"2026-11-03"},{"id":"C16","t":"p","ph":"used to + V","vi":"Tôi từng sống ở đó.","en":"I ___ there.","a":["used to live"],"tag":"thói quen quá khứ","trap":"used to + V nguyên mẫu. Không viết use to live / used to living.","set":"C","added":"2026-11-03"},{"id":"C17","t":"p","ph":"when + past simple, past continuous","vi":"Tôi đang nấu ăn thì anh ấy gọi.","en":"___ when he called.","a":["I was cooking"],"tag":"quá khứ tiếp diễn","trap":"việc đang diễn ra dùng quá khứ tiếp diễn; việc chen vào dùng quá khứ đơn (called).","set":"C","added":"2026-11-03"},{"id":"C18","t":"p","ph":"while + past continuous","vi":"Trong lúc tôi đang đợi thì cô ấy đến.","en":"___, she arrived.","a":["While I was waiting"],"tag":"quá khứ tiếp diễn","trap":"while + quá khứ tiếp diễn. Không dùng while + quá khứ đơn.","set":"C","added":"2026-11-03"},{"id":"C19","t":"p","ph":"thanks to + noun","vi":"Nhờ sự giúp đỡ của cô ấy, tôi đã tiến bộ.","en":"___, I improved.","a":["Thanks to her help"],"tag":"cụm giới từ","trap":"thanks to + danh từ. Không viết thanks for help.","set":"C","added":"2026-11-03"},{"id":"C20","t":"p","ph":"although + clause","vi":"Mặc dù mệt, tôi vẫn học.","en":"___, I studied.","a":["Although I was tired"],"tag":"mệnh đề, quá khứ","trap":"although + mệnh đề đầy đủ (có chủ ngữ + động từ). Không thêm but ở vế sau.","set":"C","added":"2026-11-03"},{"id":"C21","t":"p","ph":"not only ... but also ...","vi":"Cô ấy không chỉ tốt bụng mà còn kiên nhẫn.","en":"She is ___.","a":["not only kind but also patient"],"tag":"cấu trúc song song","trap":"hai vế cùng loại từ: kind và patient đều là tính từ.","set":"C","added":"2026-11-03"}]},"D":{"title":"Động từ bất quy tắc","order":4,"items":[{"id":"D01","t":"v","ph":"be","v1":"be","vi":"thì, là, ở","a2":["was","were","was/were","was / were"],"a3":["been"],"grp":"Đặc biệt","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D02","t":"v","ph":"begin","v1":"begin","vi":"bắt đầu","a2":["began"],"a3":["begun"],"grp":"i - a - u","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D03","t":"v","ph":"break","v1":"break","vi":"làm vỡ","a2":["broke"],"a3":["broken"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D04","t":"v","ph":"bring","v1":"bring","vi":"mang đến","a2":["brought"],"a3":["brought"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D05","t":"v","ph":"buy","v1":"buy","vi":"mua","a2":["bought"],"a3":["bought"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D06","t":"v","ph":"choose","v1":"choose","vi":"chọn","a2":["chose"],"a3":["chosen"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D07","t":"v","ph":"come","v1":"come","vi":"đến","a2":["came"],"a3":["come"],"grp":"V3 = V1","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D08","t":"v","ph":"cost","v1":"cost","vi":"có giá","a2":["cost"],"a3":["cost"],"grp":"Ba dạng giống nhau","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D09","t":"v","ph":"cut","v1":"cut","vi":"cắt","a2":["cut"],"a3":["cut"],"grp":"Ba dạng giống nhau","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D10","t":"v","ph":"do","v1":"do","vi":"làm","a2":["did"],"a3":["done"],"grp":"Đặc biệt","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D11","t":"v","ph":"draw","v1":"draw","vi":"vẽ","a2":["drew"],"a3":["drawn"],"grp":"-ew / -own","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D12","t":"v","ph":"drive","v1":"drive","vi":"lái xe","a2":["drove"],"a3":["driven"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D13","t":"v","ph":"eat","v1":"eat","vi":"ăn","a2":["ate"],"a3":["eaten"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D14","t":"v","ph":"feel","v1":"feel","vi":"cảm thấy","a2":["felt"],"a3":["felt"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D15","t":"v","ph":"find","v1":"find","vi":"tìm thấy","a2":["found"],"a3":["found"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D16","t":"v","ph":"get","v1":"get","vi":"nhận, đến","a2":["got"],"a3":["got","gotten","got/gotten","got / gotten"],"grp":"Đặc biệt","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D17","t":"v","ph":"give","v1":"give","vi":"cho","a2":["gave"],"a3":["given"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D18","t":"v","ph":"go","v1":"go","vi":"đi","a2":["went"],"a3":["gone"],"grp":"Đặc biệt","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D19","t":"v","ph":"have","v1":"have","vi":"có","a2":["had"],"a3":["had"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D20","t":"v","ph":"hear","v1":"hear","vi":"nghe thấy","a2":["heard"],"a3":["heard"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D21","t":"v","ph":"hold","v1":"hold","vi":"cầm, tổ chức","a2":["held"],"a3":["held"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D22","t":"v","ph":"keep","v1":"keep","vi":"giữ","a2":["kept"],"a3":["kept"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D23","t":"v","ph":"know","v1":"know","vi":"biết","a2":["knew"],"a3":["known"],"grp":"-ew / -own","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D24","t":"v","ph":"leave","v1":"leave","vi":"rời đi","a2":["left"],"a3":["left"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D25","t":"v","ph":"make","v1":"make","vi":"làm, tạo","a2":["made"],"a3":["made"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D26","t":"v","ph":"meet","v1":"meet","vi":"gặp","a2":["met"],"a3":["met"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D27","t":"v","ph":"pay","v1":"pay","vi":"trả tiền","a2":["paid"],"a3":["paid"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D28","t":"v","ph":"run","v1":"run","vi":"chạy","a2":["ran"],"a3":["run"],"grp":"V3 = V1","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D29","t":"v","ph":"say","v1":"say","vi":"nói","a2":["said"],"a3":["said"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D30","t":"v","ph":"sell","v1":"sell","vi":"bán","a2":["sold"],"a3":["sold"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D31","t":"v","ph":"send","v1":"send","vi":"gửi","a2":["sent"],"a3":["sent"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D32","t":"v","ph":"see","v1":"see","vi":"nhìn thấy","a2":["saw"],"a3":["seen"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D33","t":"v","ph":"sit","v1":"sit","vi":"ngồi","a2":["sat"],"a3":["sat"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D34","t":"v","ph":"sleep","v1":"sleep","vi":"ngủ","a2":["slept"],"a3":["slept"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D35","t":"v","ph":"speak","v1":"speak","vi":"nói","a2":["spoke"],"a3":["spoken"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D36","t":"v","ph":"spend","v1":"spend","vi":"dành (thời gian), tiêu tiền","a2":["spent"],"a3":["spent"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D37","t":"v","ph":"stand","v1":"stand","vi":"đứng","a2":["stood"],"a3":["stood"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D38","t":"v","ph":"take","v1":"take","vi":"lấy, mang","a2":["took"],"a3":["taken"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D39","t":"v","ph":"teach","v1":"teach","vi":"dạy","a2":["taught"],"a3":["taught"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D40","t":"v","ph":"tell","v1":"tell","vi":"kể, bảo","a2":["told"],"a3":["told"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D41","t":"v","ph":"think","v1":"think","vi":"nghĩ","a2":["thought"],"a3":["thought"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D42","t":"v","ph":"understand","v1":"understand","vi":"hiểu","a2":["understood"],"a3":["understood"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D43","t":"v","ph":"wear","v1":"wear","vi":"mặc, đeo","a2":["wore"],"a3":["worn"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D44","t":"v","ph":"win","v1":"win","vi":"thắng","a2":["won"],"a3":["won"],"grp":"V2 = V3","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D45","t":"v","ph":"write","v1":"write","vi":"viết","a2":["wrote"],"a3":["written"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D46","t":"v","ph":"hurt","v1":"hurt","vi":"đau, làm đau","a2":["hurt"],"a3":["hurt"],"grp":"Ba dạng giống nhau","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D47","t":"v","ph":"fall","v1":"fall","vi":"ngã","a2":["fell"],"a3":["fallen"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D48","t":"v","ph":"bite","v1":"bite","vi":"cắn","a2":["bit"],"a3":["bitten"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D49","t":"v","ph":"become","v1":"become","vi":"trở thành","a2":["became"],"a3":["become"],"grp":"V3 = V1","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D50","t":"v","ph":"drink","v1":"drink","vi":"uống","a2":["drank"],"a3":["drunk"],"grp":"i - a - u","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"},{"id":"D51","t":"v","ph":"forget","v1":"forget","vi":"quên","a2":["forgot"],"a3":["forgotten"],"grp":"V3 thêm -n / -en","tag":"V2 và V3","trap":"","set":"D","added":"2026-11-03"}]},"S":{"title":"Chọn V2 hay V3 trong câu","order":5,"items":[{"id":"S01","t":"p","ph":"break-broke-broken","vi":"Tôi vừa làm vỡ điện thoại rồi.","en":"I have ___ my phone.","a":["broken"],"tag":"hiện tại hoàn thành","trap":"have + V3. break-broke-broken.","set":"S","added":"2026-11-03"},{"id":"S02","t":"p","ph":"buy-bought-bought","vi":"Hôm qua tôi đã mua một chiếc váy.","en":"Yesterday I ___ a dress.","a":["bought"],"tag":"quá khứ đơn","trap":"quá khứ đơn dùng V2. V2 và V3 của buy giống nhau.","set":"S","added":"2026-11-03"},{"id":"S03","t":"p","ph":"eat-ate-eaten","vi":"Cô ấy chưa bao giờ ăn sushi.","en":"She has never ___ sushi.","a":["eaten"],"tag":"hiện tại hoàn thành","trap":"have + V3. eat-ate-eaten.","set":"S","added":"2026-11-03"},{"id":"S04","t":"p","ph":"meet-met-met","vi":"Tuần trước chúng tôi đã gặp anh ấy.","en":"Last week we ___ him.","a":["met"],"tag":"quá khứ đơn","trap":"last week là quá khứ đơn: met.","set":"S","added":"2026-11-03"},{"id":"S05","t":"p","ph":"write-wrote-written","vi":"Anh ấy đã viết ba lá thư.","en":"He has ___ three letters.","a":["written"],"tag":"hiện tại hoàn thành","trap":"have + V3. write-wrote-written.","set":"S","added":"2026-11-03"},{"id":"S06","t":"p","ph":"drive-drove-driven","vi":"Năm ngoái cô ấy đã lái xe đến Huế.","en":"Last year she ___ to Hue.","a":["drove"],"tag":"quá khứ đơn","trap":"last year là quá khứ đơn: drove.","set":"S","added":"2026-11-03"},{"id":"S07","t":"p","ph":"forget-forgot-forgotten","vi":"Tôi quên chìa khóa mất rồi.","en":"I have ___ my keys.","a":["forgotten"],"tag":"hiện tại hoàn thành","trap":"have + V3. forget-forgot-forgotten.","set":"S","added":"2026-11-03"},{"id":"S08","t":"p","ph":"sleep-slept-slept","vi":"Hôm qua tôi ngủ rất ít.","en":"Yesterday I ___ very little.","a":["slept"],"tag":"quá khứ đơn","trap":"yesterday là quá khứ đơn: slept.","set":"S","added":"2026-11-03"},{"id":"S09","t":"p","ph":"see-saw-seen","vi":"Bạn đã xem bộ phim này chưa?","en":"Have you ___ this film?","a":["seen"],"tag":"hiện tại hoàn thành","trap":"have you + V3. see-saw-seen.","set":"S","added":"2026-11-03"},{"id":"S10","t":"p","ph":"choose-chose-chosen","vi":"Cô ấy đã chọn chiếc váy xanh.","en":"She ___ the blue dress.","a":["chose"],"tag":"quá khứ đơn","trap":"Không có từ chỉ hiện tại hoàn thành nên dùng V2: chose.","set":"S","added":"2026-11-03"},{"id":"S11","t":"p","ph":"know-knew-known","vi":"Tôi đã biết cô ấy được mười năm.","en":"I have ___ her for ten years.","a":["known"],"tag":"hiện tại hoàn thành","trap":"have + V3. know-knew-known.","set":"S","added":"2026-11-03"},{"id":"S12","t":"p","ph":"drink-drank-drunk","vi":"Anh ấy đã uống hết nước.","en":"He ___ all the water.","a":["drank"],"tag":"quá khứ đơn","trap":"drink-drank-drunk. Quá khứ đơn dùng drank.","set":"S","added":"2026-11-03"},{"id":"S13","t":"p","ph":"sell-sold-sold","vi":"Năm ngoái họ đã bán nhà.","en":"They ___ their house last year.","a":["sold"],"tag":"quá khứ đơn","trap":"last year là quá khứ đơn: sold.","set":"S","added":"2026-11-03"},{"id":"S14","t":"p","ph":"cut-cut-cut","vi":"Hôm qua tôi đã cắt tóc.","en":"I ___ my hair yesterday.","a":["cut"],"tag":"quá khứ đơn","trap":"cut-cut-cut: V2 giống V1. Có yesterday nên là quá khứ.","set":"S","added":"2026-11-03"},{"id":"S15","t":"p","ph":"speak-spoke-spoken","vi":"Cô ấy đã nói với giáo viên rồi.","en":"She has already ___ to the teacher.","a":["spoken"],"tag":"hiện tại hoàn thành","trap":"have + V3. speak-spoke-spoken.","set":"S","added":"2026-11-03"}]}};
+var $app=document.getElementById("app");
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var pad=function(n){return (n<10?"0":"")+n};
+function dkey(d){d=d||new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+/* ---------- state ---------- */
+var cards=[], byId={}, setMeta={};
+var S_={s:{},days:{},u:0};          // s[id] = [sai, đúng, chuỗi đúng, ngày sai gần nhất]
+var statsRef=null, cardsReady=false, statsReady=false, loadFailed="";
+var view="home", tab="home";
+var sess=null;
+
+function st(id){return S_.s[id]||[0,0,0,""]}
+function mastered(id){var x=S_.s[id];return !!x&&x[2]>=3}
+function isErr(id){var x=S_.s[id];return !!x&&x[0]>0&&x[2]<3}
+function errCards(){return cards.filter(function(c){return isErr(c.id)}).sort(function(a,b){return st(b.id)[0]-st(a.id)[0]})}
+
+/* ---------- save / sync ---------- */
+var dirty=false,saving=false,timer=null,syncState="";
+function setSync(s){syncState=s;var el=document.getElementById("sync");if(el)el.textContent=syncLabel()}
+function syncLabel(){return syncState==="ok"?"Đã đồng bộ":syncState==="pending"?"Đang lưu…":syncState==="err"?"Chưa đồng bộ được, sẽ thử lại":syncState==="local"?"Tiến độ lưu trên máy này":""}
+function markDirty(){S_.u=Date.now();lsSet("cp_stats",JSON.stringify(S_));dirty=true;clearTimeout(timer);timer=setTimeout(flush,1200);setSync(statsRef?"pending":"local")}
+async function flush(){
+  if(!statsRef||saving||!dirty)return;
+  saving=true;dirty=false;
+  try{await statsRef.set({s:S_.s,days:S_.days,u:S_.u});setSync(dirty?"pending":"ok")}
+  catch(e){dirty=true;setSync("err");clearTimeout(timer);timer=setTimeout(flush,5000)}
+  saving=false;
+  if(dirty&&syncState!=="err"){clearTimeout(timer);timer=setTimeout(flush,800)}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")flush()});
+
+/* ---------- grading ---------- */
+function norm(s){return String(s||"").toLowerCase().replace(/[‘’`]/g,"'").replace(/\s+/g," ").trim().replace(/[.!?,;:]+$/,"").trim()}
+function accepted(c){return c.t==="v"?[c.a2,c.a3]:[c.a]}
+function labels(c){return c.t==="v"?["V2","V3"]:[""]}
+function grade(c,vals){return accepted(c).map(function(a,i){var v=norm(vals[i]);return !!v&&a.map(norm).indexOf(v)>=0})}
+function fullEn(c){return c.t==="v"?c.v1+", "+c.a2[0]+", "+c.a3[0]:c.en.replace("___",c.a[0])}
+function speak(t){try{var u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- views ---------- */
+function streak(){
+  var n=0,d=new Date();
+  if(!S_.days[dkey(d)])d.setDate(d.getDate()-1);
+  while(S_.days[dkey(d)]){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+function tabsHTML(){
+  var t=[["home","Hôm nay"],["err","Lỗi"],["store","Kho cụm"],["data","Dữ liệu"]];
+  return '<div class="tabs" role="tablist">'+t.map(function(x){return '<button class="tab" role="tab" data-tab="'+x[0]+'" aria-selected="'+(tab===x[0])+'">'+x[1]+(x[0]==="err"&&cardsReady&&errCards().length?" ("+errCards().length+")":"")+'</button>'}).join("")+'</div>';
+}
+function footHTML(){return '<footer><span id="sync">'+syncLabel()+'</span><span>'+cards.length+' câu</span></footer>'}
+function head(){return '<div class="row between"><h1>Sổ tay cụm từ</h1><span class="streak" title="Số ngày liên tiếp học đủ một lượt">'+streak()+' ngày liên tiếp</span></div>'}
+
+function render(){
+  if(view==="sess"||view==="sum")return;
+  if(loadFailed){$app.innerHTML=head()+'<p class="empty">'+esc(loadFailed)+'</p>';return}
+  if(!cardsReady||!statsReady){$app.innerHTML=head()+'<p class="empty">Đang tải kho cụm…</p>';return}
+  if(!cards.length){$app.innerHTML=head()+'<p class="empty">Kho cụm đang trống. Vào tab Dữ liệu để nhập cụm.</p>';return}
+  if(tab==="home")renderHome();else if(tab==="err")renderErr();else if(tab==="data")renderData();else renderStore();
+  $app.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){tab=b.dataset.tab;render()}});
+}
+
+function renderHome(){
+  var n=cards.length,mins=Math.max(1,Math.round(n*7/60)),done=!!S_.days[dkey()],errs=errCards().length;
+  var groups={};cards.forEach(function(c){var g=groups[c.set]||(groups[c.set]={n:0,m:0});g.n++;if(mastered(c.id))g.m++});
+  var keys=Object.keys(groups).sort(function(a,b){return (setMeta[a].order||0)-(setMeta[b].order||0)});
+  var tot=cards.filter(function(c){return mastered(c.id)}).length;
+  $app.innerHTML=head()+tabsHTML()+
+   '<section class="card"><div class="row between"><div><div class="big">'+n+'</div><div class="mute small">câu cho lượt hôm nay, khoảng '+mins+' phút</div></div>'+
+   (done?'<span class="pill good">Hôm nay xong rồi</span>':'')+'</div>'+
+   '<button class="btn block" id="go">'+(done?"Học lại một lượt":"Bắt đầu lượt hôm nay")+'</button>'+
+   (errs?'<button class="btn ghost block" id="goErr">Chỉ ôn '+errs+' câu hay sai</button>':'')+
+   '<p class="small mute">Gõ chính xác từng chữ. Chữ hoa, chữ thường và dấu chấm cuối câu thì không tính. Sai thì câu đó quay lại sau vài câu.</p></section>'+
+   '<section class="card"><div class="row between"><h2>Đã vững</h2><span class="num">'+tot+' / '+n+'</span></div><div class="sets">'+
+   keys.map(function(k){var g=groups[k];return '<div class="set"><span>'+esc(setMeta[k].title)+'</span><span class="num">'+g.m+' / '+g.n+'</span><div class="bar good"><i style="width:'+Math.round(g.m/g.n*100)+'%"></i></div></div>'}).join("")+
+   '</div><p class="small mute">Một câu tính là vững khi trả lời đúng ngay lần đầu 3 lượt liên tiếp.</p></section>'+footHTML();
+  document.getElementById("go").onclick=function(){start("all")};
+  var ge=document.getElementById("goErr");if(ge)ge.onclick=function(){start("err")};
+}
+
+function renderErr(){
+  var list=errCards();
+  var seen=cards.filter(function(c){return st(c.id)[0]>0}).length;
+  $app.innerHTML=head()+tabsHTML()+
+   (list.length?'<section class="card"><div class="row between"><h2>'+list.length+' câu chưa vững</h2><span class="num">đã từng sai: '+seen+'</span></div>'+
+   '<button class="btn block" id="goErr">Ôn các câu này</button><div class="list">'+list.map(function(c){var x=st(c.id);
+   return '<div class="item"><div class="row between"><b class="mono">'+esc(c.ph)+'</b><span class="pill bad">sai '+x[0]+' lần</span></div><span class="mute">'+esc(c.vi||c.v1)+'</span>'+(c.trap?'<span class="small trap">'+esc(c.trap)+'</span>':'')+'</div>'}).join("")+'</div></section>'
+   :'<p class="empty">Chưa có câu nào đang sai. Làm một lượt hôm nay rồi các câu sai sẽ hiện ở đây.</p>')+footHTML();
+  var ge=document.getElementById("goErr");if(ge)ge.onclick=function(){start("err")};
+}
+
+function renderStore(){
+  $app.innerHTML=head()+tabsHTML()+'<input class="search" id="q" type="search" placeholder="Tìm cụm hoặc nghĩa…" autocomplete="off"><div id="sl" class="sets"></div>'+footHTML();
+  var q=document.getElementById("q");
+  var paint=function(){
+    var t=norm(q.value),keys=Object.keys(setMeta).sort(function(a,b){return setMeta[a].order-setMeta[b].order});
+    document.getElementById("sl").innerHTML=keys.map(function(k){
+      var items=cards.filter(function(c){return c.set===k&&(!t||(c.ph+" "+(c.vi||"")+" "+(c.v1||"")).toLowerCase().indexOf(t)>=0)});
+      if(!items.length)return "";
+      return '<details'+(t?" open":"")+'><summary><span>'+esc(setMeta[k].title)+'</span><span class="pill">'+items.length+'</span></summary><div class="list">'+items.map(function(c){var x=st(c.id);
+        var ans=c.t==="v"?c.v1+" – "+c.a2[0]+" – "+c.a3[0]:c.a.join(" / ");
+        return '<div class="item"><div class="row between"><b class="mono">'+esc(c.ph)+'</b>'+(x[0]?'<span class="pill bad">sai '+x[0]+'</span>':mastered(c.id)?'<span class="pill good">vững</span>':'')+'</div><span class="mute">'+esc(c.vi)+'</span><span class="mono small">'+esc(ans)+'</span></div>'}).join("")+'</div></details>'}).join("")||'<p class="empty">Không có kết quả.</p>';
+  };
+  q.oninput=paint;paint();
+}
+
+/* ---------- session ---------- */
+function start(mode,only){
+  var ids;
+  if(only){ids=only}
+  else if(mode==="err"){ids=errCards().map(function(c){return c.id})}
+  else ids=cards.map(function(c){return c.id});
+  if(!ids.length)return;
+  ids=shuffle(ids);
+  var q=ids.map(function(id){return {id:id,retry:false,again:false}});
+  var extra=ids.filter(function(id){var c=byId[id];return mode==="err"||isErr(id)||(c.n&&!mastered(id))});
+  extra=shuffle(extra);
+  var half=Math.floor(q.length/2);
+  extra.forEach(function(id){var pos=half+Math.floor(Math.random()*(q.length-half+1));q.splice(pos,0,{id:id,retry:false,again:true})});
+  sess={mode:mode,queue:q,total:q.length,answered:0,first:0,firstOk:0,wrong:{},t0:Date.now(),cur:null,phase:"ask"};
+  view="sess";next();
+}
+function next(){
+  if(!sess.queue.length){finish();return}
+  sess.cur=sess.queue.shift();sess.phase="ask";renderQ();
+}
+function progress(){var left=sess.queue.length+(sess.phase==="ask"?1:0);var d=sess.answered,t=d+left;return {d:d,t:t,p:t?Math.round(d/t*100):0}}
+function topHTML(){var p=progress();return '<div class="top"><button class="btn text" id="quit">Thoát</button><div class="bar"><i style="width:'+p.p+'%"></i></div><span class="num">'+p.d+' / '+p.t+'</span></div>'}
+function inputsHTML(c,pre,vals){
+  var ls=labels(c);
+  return '<div class="fields">'+ls.map(function(l,i){return '<label class="f">'+(l?'<span class="lb">'+l+'</span>':'')+'<input class="ans" id="'+pre+i+'" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" value="'+esc(vals&&vals[i]||"")+'" aria-label="Câu trả lời '+l+'"></label>'}).join("")+'</div>';
+}
+function chipsHTML(x){
+  var c=byId[x.id];
+  return '<div class="chips"><span class="chip form">'+esc(c.tag)+'</span>'+(c.t==="v"?'<span class="chip">'+esc(c.grp)+'</span>':'')+(x.retry?'<span class="chip warn">làm lại câu vừa sai</span>':x.again?'<span class="chip warn">hay sai</span>':'')+'</div>';
+}
+function promptHTML(c){
+  if(c.t==="v")return '<div class="v1">'+esc(c.v1)+'</div><p class="vi">'+esc(c.vi)+'</p>';
+  return '<p class="vi">'+esc(c.vi)+'</p><p class="en">'+esc(c.en).replace("___",'<span class="blank"></span>')+'</p>';
+}
+function wireQuit(){var q=document.getElementById("quit");if(q)q.onclick=function(){if(sess&&sess.answered>0)flush();sess=null;view="home";render()}}
+
+function renderQ(){
+  var x=sess.cur,c=byId[x.id];
+  $app.innerHTML=topHTML()+'<section class="card">'+chipsHTML(x)+promptHTML(c)+inputsHTML(c,"a")+
+   '<div class="row"><button class="btn" id="chk" style="flex:1">Kiểm tra</button><button class="btn ghost" id="dk">Không nhớ</button></div></section>';
+  wireQuit();
+  var n=labels(c).length,ins=[];for(var i=0;i<n;i++)ins.push(document.getElementById("a"+i));
+  ins.forEach(function(el,i){el.addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();if(i<n-1)ins[i+1].focus();else submit(ins.map(function(z){return z.value}))})});
+  document.getElementById("chk").onclick=function(){submit(ins.map(function(z){return z.value}))};
+  document.getElementById("dk").onclick=function(){submit(ins.map(function(){return ""}),true)};
+  ins[0].focus();
+}
+
+function submit(vals,skip){
+  if(sess.phase!=="ask")return;
+  var x=sess.cur,c=byId[x.id];
+  if(!skip&&!vals.some(function(v){return norm(v)}))return;
+  var res=grade(c,vals),ok=res.every(Boolean);
+  sess.phase="fb";sess.answered++;
+  if(!x.retry){
+    var s=S_.s[c.id]||(S_.s[c.id]=[0,0,0,""]);
+    if(!x.again||!sess.wrong[c.id]){}
+    if(ok){s[1]++;s[2]++}else{s[0]++;s[2]=0;s[3]=dkey()}
+    sess.first++;if(ok)sess.firstOk++;
+    markDirty();
+  }
+  if(!ok){
+    sess.wrong[c.id]=(sess.wrong[c.id]||0)+1;
+    if(x.retry){sess.queue.splice(Math.min(sess.queue.length,3),0,{id:c.id,retry:true,again:false})}
+    else{
+      sess.queue.splice(Math.min(sess.queue.length,4),0,{id:c.id,retry:true,again:false});
+      sess.queue.splice(Math.min(sess.queue.length,11),0,{id:c.id,retry:true,again:false});
+    }
+  }
+  renderFB(vals,res,ok,skip);
+}
+
+function renderFB(vals,res,ok,skip){
+  var x=sess.cur,c=byId[x.id],ls=labels(c),acc=accepted(c);
+  var fields=ls.map(function(l,i){
+    return '<div class="f">'+(l?'<span class="lb">'+l+'</span>':'')+'<input class="ans '+(res[i]?"ok":"no")+'" value="'+esc(vals[i]||"")+'" readonly aria-label="Bạn đã gõ"></div>';
+  }).join("");
+  var right=c.t==="v"
+    ? '<div class="mono">'+esc(c.v1)+' – <mark>'+esc(c.a2[0])+'</mark> – <mark>'+esc(c.a3[0])+'</mark></div>'
+    : '<div class="mono en">'+esc(c.en).replace("___","<mark>"+esc(c.a[0])+"</mark>")+'</div>';
+  var alt=(c.t!=="v"&&c.a.length>1)?'<div class="small mute">Cũng đúng: '+esc(c.a.slice(1).join(" / "))+'</div>':"";
+  var phr=c.t==="v"?"":'<div class="small mute">Cụm: <b class="mono">'+esc(c.ph)+'</b></div>';
+  var trap=c.trap?'<div class="trap small"><b>Bẫy:</b> '+esc(c.trap)+'</div>':"";
+  var body=
+   '<section class="card">'+chipsHTML(x)+promptHTML(c).replace(/<span class="blank"><\/span>/,"<mark>…</mark>")+
+   '<div class="fields">'+fields+'</div>'+
+   '<div class="fb '+(ok?"ok":"no")+'"><b class="t">'+(ok?"Đúng":(skip?"Đáp án":"Sai"))+'</b>'+(ok?"":right)+(ok?right:"")+alt+phr+'</div>'+trap;
+  if(ok){
+    body+='<div class="row"><button class="btn" id="nx" style="flex:1">Tiếp tục</button><button class="btn ghost" id="say">Nghe</button></div></section>';
+    $app.innerHTML=topHTML()+body;
+    wireQuit();
+    document.getElementById("say").onclick=function(){speak(fullEn(c))};
+    document.getElementById("nx").onclick=next;
+    document.getElementById("nx").focus();
+  }else{
+    body+='<p class="small mute">Gõ lại đáp án đúng một lần rồi mới sang câu tiếp.</p>'+inputsHTML(c,"r")+
+     '<div class="row"><button class="btn" id="nx" style="flex:1" disabled>Tiếp tục</button><button class="btn ghost" id="say">Nghe</button></div></section>';
+    $app.innerHTML=topHTML()+body;
+    wireQuit();
+    document.getElementById("say").onclick=function(){speak(fullEn(c))};
+    var n=ls.length,ins=[];for(var i=0;i<n;i++)ins.push(document.getElementById("r"+i));
+    var nx=document.getElementById("nx");
+    var okAll=function(){return acc.every(function(a,i){return a.map(norm).indexOf(norm(ins[i].value))>=0})};
+    var upd=function(){nx.disabled=!okAll()};
+    ins.forEach(function(el,i){
+      el.addEventListener("input",upd);
+      el.addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();if(i<n-1)ins[i+1].focus();else if(okAll())next()});
+    });
+    nx.onclick=function(){if(okAll())next()};
+    ins[0].focus();
+  }
+}
+
+function finish(){
+  var wrongIds=Object.keys(sess.wrong);
+  if(sess.mode==="all"){S_.days[dkey()]=true;markDirty()}
+  flush();
+  var secs=Math.round((Date.now()-sess.t0)/1000),acc=sess.first?Math.round(sess.firstOk/sess.first*100):0;
+  var s=sess;sess=null;view="sum";
+  $app.innerHTML='<div class="row between"><h1>Xong lượt này</h1><span class="streak">'+streak()+' ngày liên tiếp</span></div>'+
+   '<section class="card"><div class="row" style="gap:28px"><div><div class="big">'+acc+'%</div><div class="mute small">đúng ngay lần đầu ('+s.firstOk+'/'+s.first+')</div></div><div><div class="big">'+Math.floor(secs/60)+'’'+pad(secs%60)+'</div><div class="mute small">thời gian</div></div></div></section>'+
+   (wrongIds.length?'<section class="card"><h2>'+wrongIds.length+' câu bị sai trong lượt này</h2><div class="list">'+wrongIds.map(function(id){var c=byId[id];
+    return '<div class="item"><div class="row between"><b class="mono">'+esc(c.ph)+'</b><span class="pill bad">sai '+s.wrong[id]+' lần</span></div><span class="mute">'+esc(c.vi)+'</span>'+(c.trap?'<span class="small trap">'+esc(c.trap)+'</span>':"")+'</div>'}).join("")+'</div>'+
+    '<button class="btn block" id="again">Ôn lại ngay những câu này</button></section>'
+   :'<section class="card"><p>Không sai câu nào. Mai làm lại để giữ trí nhớ.</p></section>')+
+   '<button class="btn ghost block" id="home">Về trang chủ</button>';
+  document.getElementById("home").onclick=function(){view="home";tab="home";render()};
+  var ag=document.getElementById("again");if(ag)ag.onclick=function(){start("err",wrongIds)};
+}
+
+/* ---------- boot ---------- */
+function rebuild(docs){
+  var list=[];setMeta={};
+  docs.forEach(function(d){var v=d.data()||{};setMeta[d.id]={title:v.title||d.id,order:v.order||99};(v.items||[]).forEach(function(it){it.set=d.id;list.push(it)})});
+  var order=Object.keys(setMeta).sort(function(a,b){return setMeta[a].order-setMeta[b].order});
+  list.sort(function(a,b){return order.indexOf(a.set)-order.indexOf(b.set)});
+  cards=list;byId={};cards.forEach(function(c){byId[c.id]=c});
+  cardsReady=true;
+}
+function loadExtra(){try{return JSON.parse(lsGet("cp_extra")||"{}")||{}}catch(e){return {}}}
+function allDocs(){
+  var m={};Object.keys(DATA).forEach(function(k){m[k]=DATA[k]});
+  var ex=loadExtra();Object.keys(ex).forEach(function(k){m[k]=ex[k]});
+  return Object.keys(m).map(function(k){return {id:k,data:function(){return m[k]}}});
+}
+function b64e(o){return "CP1."+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function b64d(t){return JSON.parse(decodeURIComponent(escape(atob(t.slice(4)))))}
+function renderData(){
+  $app.innerHTML=head()+tabsHTML()+
+   '<section class="card"><h2>Chuyển sang máy khác</h2><p class="small mute">Bấm Tạo mã, chép cả đoạn mã, sang máy kia dán vào ô bên dưới rồi bấm Nhập. Mã gồm tiến độ và các cụm đã thêm.</p>'+
+   '<div class="row"><button class="btn" id="mk">Tạo mã</button><button class="btn ghost" id="cp" disabled>Sao chép</button></div>'+
+   '<textarea class="search mono small" id="out" rows="3" readonly placeholder="Mã sẽ hiện ở đây" aria-label="Mã tiến độ"></textarea></section>'+
+   '<section class="card"><h2>Nhập mã hoặc thêm cụm mới</h2><p class="small mute">Dán mã từ máy khác, hoặc khối cụm mới do Claude gửi. Nhập mã sẽ gộp với tiến độ đang có, không xóa gì.</p>'+
+   '<textarea class="search mono small" id="inp" rows="4" placeholder="Dán vào đây" aria-label="Dán mã"></textarea>'+
+   '<button class="btn" id="imp">Nhập</button><p class="small" id="msg" role="status"></p></section>'+
+   '<section class="card"><h2>Xóa tiến độ</h2><p class="small mute">Đưa mọi câu về trạng thái chưa học. Các cụm đã thêm vẫn giữ.</p><button class="btn ghost" id="rst">Xóa tiến độ</button></section>'+footHTML();
+  $app.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){tab=b.dataset.tab;render()}});
+  var out=document.getElementById("out"),cp=document.getElementById("cp"),msg=document.getElementById("msg");
+  document.getElementById("mk").onclick=function(){out.value=b64e({s:S_.s,days:S_.days,extra:loadExtra()});cp.disabled=false;out.focus();out.select()};
+  cp.onclick=function(){out.select();var done=function(){cp.textContent="Đã sao chép"};try{navigator.clipboard.writeText(out.value).then(done,function(){try{document.execCommand("copy");done()}catch(e){}})}catch(e){try{document.execCommand("copy");done()}catch(z){}}};
+  document.getElementById("imp").onclick=function(){
+    var t=document.getElementById("inp").value.trim();if(!t){return}
+    try{
+      if(t.indexOf("CP1.")===0){
+        var o=b64d(t);
+        Object.keys(o.s||{}).forEach(function(id){var a=S_.s[id],b=o.s[id];if(!a||(b[0]+b[1])>(a[0]+a[1]))S_.s[id]=b});
+        Object.keys(o.days||{}).forEach(function(d){S_.days[d]=true});
+        var ex=loadExtra();Object.keys(o.extra||{}).forEach(function(k){ex[k]=o.extra[k]});lsSet("cp_extra",JSON.stringify(ex));
+        markDirty();msg.textContent="Đã nhập tiến độ.";
+      }else{
+        var d=JSON.parse(t);if(!d||!d.id||!Array.isArray(d.items))throw 0;
+        var ex2=loadExtra();ex2[d.id]={title:d.title||d.id,order:d.order||50,items:d.items};lsSet("cp_extra",JSON.stringify(ex2));
+        msg.textContent="Đã thêm "+d.items.length+" câu vào bộ \u201c"+(d.title||d.id)+"\u201d.";
+      }
+      rebuild(allDocs());document.getElementById("inp").value="";
+    }catch(e){msg.textContent="Mã không đọc được. Kiểm tra xem đã dán đủ cả đoạn chưa."}
+  };
+  var rs=document.getElementById("rst"),armed=false;
+  rs.onclick=function(){if(!armed){armed=true;rs.textContent="Bấm lần nữa để xóa thật";return}S_={s:{},days:{},u:Date.now()};lsSet("cp_stats",JSON.stringify(S_));render()};
+}
+function boot(){
+  try{var loc=JSON.parse(lsGet("cp_stats")||"null");if(loc&&loc.s){S_=loc}}catch(e){}
+  rebuild(allDocs());statsReady=true;setSync("local");render();
+}
+boot();
+})();
+</script>
+
+</body></html>
