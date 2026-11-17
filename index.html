@@ -1111,6 +1111,7 @@ const EDIT={
  '1|separated':'Ly thân — tính từ, chỉ một từ','4|be separated':'Ly thân — cụm có động từ be',
  '1|divorced':'Ly hôn — tính từ, chỉ một từ','4|be divorced':'Ly hôn — cụm có động từ be','4|divorce':'Ly hôn — động từ / danh từ, không có đuôi -d',
  '7|bite':'Cắn — chỉ một từ','6|sleep =':'Ngủ — chỉ một từ',
+ '1|doesn\u0027t + v + much':'Không làm gì đó nhiều — như không nói nhiều, không ăn nhiều',
  '5|say - said - said':'nói — nói ra điều gì','6|speak - spoke - spoken':'nói — nói chuyện, nói một ngôn ngữ'
 };
 const SAME=[
@@ -1139,14 +1140,14 @@ function formOf(x){
   const e=x.en.replace(/\\u0027/g,"'").toLowerCase(),sl=e.includes(' / ');
   if(/\bhave\s*\/\s*has been\b|\bhas been\b|\bhave been \+?\s*v-?ing/.test(e))return'hiện tại hoàn thành tiếp diễn';
   if(/\bhave you (ever|\+ v3)|\bhaven'?t\b.*v3|have\s*\/\s*has \+ v3/.test(e))return'hiện tại hoàn thành';
-  if(/\b(was|were)\b.*\bv3\b|\bwhy was\b/.test(e))return'bị động quá khứ (was/were + V3)';
-  if(/^be born\b|^born\b/.test(e))return'quá khứ: was / were born';
+  if(/\b(was|were)\b.*\bv3\b|\bwhy was\b/.test(e))return'bị động, quá khứ';
+  if(/^be born\b|^born\b/.test(e))return'quá khứ';
   if(/^if i were/.test(e))return'câu điều kiện loại 2';
   if(!sl&&/\b(was|were|had)\b|\bv2\b/.test(e))return'quá khứ đơn';
-  if(/\bbe\s*\+\s*v-?ing|^be going\b|\bis \+ v-?ing/.test(e))return'hiện tại tiếp diễn (be + V-ing)';
+  if(/\bbe\s*\+\s*v-?ing|^be going\b|\bis \+ v-?ing/.test(e))return'hiện tại tiếp diễn';
   if(/\b(does|do|doesn'?t|don'?t)\b|\bs \+ has\b/.test(e))return'hiện tại đơn';
-  if(/^(be|am|is|are)\b/.test(e))return'hiện tại đơn, bắt đầu bằng be';
-  if(/^have\b/.test(e)&&!/^have you/.test(e))return'hiện tại đơn, bắt đầu bằng have';
+  if(/^(be|am|is|are)\b/.test(e))return'hiện tại đơn';
+  if(/^have\b/.test(e)&&!/^have you/.test(e))return'hiện tại đơn';
   if(VERBS.has(e.split(/\s+/)[0]))return'động từ nguyên mẫu';
   return'';
 }
