@@ -1276,7 +1276,18 @@ function renderSession(){
     '<div class="row nowrap" style="margin-top:12px"><button class="pri grow" data-a="check">Kiểm tra</button><button data-a="hint">💡 Gợi ý</button><button data-a="giveup">Không nhớ</button></div></section>');
   const inp=$('#ans');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();actions.check()}})}
 }
-function formLine(x){const f=formOf(x);return f?'<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>':''}
+const POSN={n:'danh từ',v:'động từ',a:'tính từ',adj:'tính từ',adv:'trạng từ',prep:'giới từ',conj:'liên từ',pron:'đại từ'};
+function posLine(x){
+  if(x.t!=='Từ mới')return'';
+  const tail=(x.ipa||'').replace(/^.*\//,'').trim(),m=tail.match(/^(n|v|a|adj|adv|prep|conj|pron)\b(.*)$/i);
+  if(m){const k=m[1].toLowerCase();return POSN[k]+(/P2/i.test(m[2])?' (dạng V3)':'')}
+  const e=x.en.trim();
+  if(/[\/=(]/.test(e))return'';
+  const w=e.split(/\s+/);
+  if(w.length>1)return(VERBS.has(w[0].toLowerCase())?'cụm động từ':'cụm từ')+', '+w.length+' từ';
+  return'';
+}
+function formLine(x){const pl=posLine(x);if(pl)return'<div class="small mute">Loại từ: <b>'+esc(pl)+'</b></div>';const f=formOf(x);return f?'<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>':''}
 function feedbackHtml(x){
   const f=S.fb;
   const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
