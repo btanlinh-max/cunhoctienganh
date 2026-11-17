@@ -1121,6 +1121,7 @@ const SAME=[
  ['trainers','sneakers'],['stomachache','stomach ache'],['nearsighted','myopic'],['an outgoing person','extrovert'],
  ["What's going on with + danh từ?","What's wrong with + danh từ?"]
 ];
+const EXTRA={'1|elder / older / younger sister hoặc brother':['siblings','brothers and sisters']};
 let VERBS=new Set();
 function setupExtras(){ // chạy sau khi các hàm chấm đã được định nghĩa
   ITEMS.forEach(x=>{if(EDIT[x.id])x.vi=EDIT[x.id]});
@@ -1129,6 +1130,7 @@ function setupExtras(){ // chạy sau khi các hàm chấm đã được định
     SAME.forEach(g=>{const keys=g.map(m=>tokens(m).join(' '));
       if(keys.some(k=>own.has(k))){x.xm=(x.xm||[]).concat(g.filter((m,i)=>!own.has(keys[i])));x.xa=(x.xa||[]).concat(g.flatMap(m=>altsOf(m)))}});
   });
+  Object.keys(EXTRA).forEach(id=>{const x=byId[id];if(x){x.xm=(x.xm||[]).concat(EXTRA[id]);x.xa=(x.xa||[]).concat(EXTRA[id].flatMap(m=>altsOf(m)))}});
   VERBS=new Set(ITEMS.filter(x=>x.t===VERB).map(x=>x.en.split(/\s*[-\/]\s*/)[0].trim().toLowerCase()));
   'go get take make spend look ask tell live stay meet hold call wait try need want enjoy stop start keep give hang talk speak say see come find bring leave turn put work play study help buy sell open close cook clean wash write read watch listen learn teach use visit lose win pay pass check join move send show share wear ride drive fall'.split(' ').forEach(v=>VERBS.add(v));
 }
@@ -1204,7 +1206,7 @@ function pickVoice(){if(!('speechSynthesis' in window))return;const vs=speechSyn
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}
 function speak(text){
   if(!('speechSynthesis' in window)){toast('Trình duyệt này không có giọng đọc');return}
-  speechSynthesis.cancel();const t=text.split(/\s\/\s/)[0].replace(/\(.*?\)/g,' ').replace(/[+]|\bsb\b|\bsth\b|\bV-ing\b|\bV\b/g,' ').replace(/\s+/g,' ').trim();
+  speechSynthesis.cancel();const t=text.replace(/\(.*?\)/g,' ').replace(/\bhoặc\b/gi,' or ').replace(/\s-\s/g,', ').replace(/\s\/\s/g,', ').replace(/[+]|\bsb\b|\bsth\b|\bV-ing\b|\bV\b|\bdanh\b/g,' ').split(/\s+/).filter(w=>w&&!VI_RX.test(w)).join(' ').replace(/\s+,/g,',').trim();
   const u=new SpeechSynthesisUtterance(t);u.lang='en-US';if(voice)u.voice=voice;u.rate=.9;speechSynthesis.speak(u);
 }
 
@@ -1278,16 +1280,17 @@ function feedbackHtml(x){
   const f=S.fb;
   const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
   return'<div class="fb '+(f.ok?'ok':'bad')+'"><b>'+head+'</b></div><section class="card">'+infoCard(x)+'</section>'+
+    (f.ok||f.self?'':'<button class="sm" data-a="countok" style="align-self:flex-start">✓ Tôi gõ khác nhưng vẫn đúng</button>')+
     '<button class="pri big" id="nextBtn" data-a="next">Tiếp tục</button>';
 }
 /* lần trả lời đầu tiên quyết định lịch ôn các ngày sau; các lần làm lại chỉ để nhớ trong buổi */
 function record(ok,extra){
-  const it=S.queue[0],x=byId[it.id],p=ensureProg(x),t=today();
+  const it=S.queue[0],x=byId[it.id],p=ensureProg(x),t=today(),pb=p.b;
   if(it.first){
     if(ok){p.b=Math.min(4,p.b+1);p.d=t+INT[p.b];S.ok++;dayLog().ok++}
     else{p.b=0;p.d=t+1;S.bad++;S.wrongIds.add(x.id);dayLog().bad++}
   }
-  if(it.first)p.u=Date.now();S.fb=Object.assign({ok},extra||{});S.phase='fb';S.hint=0;save();render();
+  if(it.first)p.u=Date.now();S.fb=Object.assign({ok,pb},extra||{});S.phase='fb';S.hint=0;save();render();
 }
 const actions={
   start:()=>startDay(DAYPICK),
@@ -1297,6 +1300,9 @@ const actions={
   hint:()=>{S.hint=1;const a=$('#ans'),val=a?a.value:'';render();const b=$('#ans');if(b){b.value=val;b.focus()}},
   check:()=>{const x=byId[S.queue[0].id],inp=$('#ans');if(!inp)return;const r=checkAnswer(x,inp.value);if(r.empty){inp.focus();return}record(!!r.ok,{near:r.near,extra:r.extra,given:inp.value})},
   giveup:()=>record(false,{}),
+  countok:()=>{const it=S.queue[0],x=byId[it.id],p=ensureProg(x),f=S.fb;
+    if(it.first&&f&&!f.ok){p.b=Math.min(4,(f.pb||0)+1);p.d=today()+INT[p.b];p.u=Date.now();S.bad--;S.ok++;S.wrongIds.delete(x.id);const l=dayLog();l.bad=Math.max(0,l.bad-1);l.ok++}
+    f.ok=true;f.manual=true;save();render()},
   reveal:()=>{S.phase='self';render()},
   selfok:()=>{S.phase='q';record(true,{self:true})},
   selfbad:()=>{S.phase='q';record(false,{self:true})},
