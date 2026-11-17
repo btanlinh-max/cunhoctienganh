@@ -1322,14 +1322,14 @@ document.addEventListener('keydown',e=>{if(S&&S.phase==='fb'&&e.key==='Enter'&&d
 
 /* ===== Đồng bộ qua Firebase Realtime Database (gọi thẳng REST, không cần thư viện) =====
    Dữ liệu nằm ở  <địa chỉ>/sotay/<mã đồng bộ>.json . Mã dài và ngẫu nhiên đóng vai trò chìa khoá. */
-const SYNC_URL='';   // dán địa chỉ Realtime Database vào đây để khỏi phải nhập trên từng máy
+const SYNC_URL='https://sotaycumtu-default-rtdb.asia-southeast1.firebasedatabase.app';   // dán địa chỉ Realtime Database vào đây để khỏi phải nhập trên từng máy
 const SYKEY='sotay_sync';
 let SY=(()=>{try{return JSON.parse(localStorage.getItem(SYKEY))||{}}catch(e){return{}}})();
-let syncState='',syncTimer=null,syncBusy=false,syncAgain=false;
+let syncState='',syncErr='',syncTimer=null,syncBusy=false,syncAgain=false;
 const syncUrl=()=>String(SYNC_URL||SY.url||'').trim().replace(/\/+$/,'');
 const syncOn=()=>!!(syncUrl()&&SY.code);
 const syncEndpoint=()=>syncUrl()+'/sotay/'+encodeURIComponent(SY.code)+'.json';
-const syncLabel=()=>syncOn()?({ok:'☁️ đã đồng bộ',busy:'☁️ đang đồng bộ…',err:'☁️ chưa đồng bộ được'})[syncState]||'☁️':'';
+const syncLabel=()=>syncOn()?({ok:'☁️ đã đồng bộ',busy:'☁️ đang đồng bộ…',err:'☁️ chưa đồng bộ: '+(syncErr||'lỗi')})[syncState]||'☁️':'';
 function setSync(x){syncState=x;const e=$('#syncState');if(e)e.textContent=syncLabel()}
 function mergeInto(local,remote){
   if(!remote||typeof remote!=='object')return false;
@@ -1360,7 +1360,7 @@ async function syncNow(){
     const w=await fetch(syncEndpoint(),{method:'PUT',body,headers:{'Content-Type':'application/json'}});if(!w.ok)throw new Error('PUT '+w.status);
     setSync('ok');
     if(changed&&!S)render();
-  }catch(e){setSync('err');clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,15000)}
+  }catch(e){const m=String(e&&e.message||'');syncErr=/ (401|403)$/.test(m)?'chưa có quyền, kiểm tra Rules bên Firebase':/ 404$/.test(m)?'sai địa chỉ Firebase':/ \d{3}$/.test(m)?'máy chủ báo lỗi '+m.slice(-3):'không kết nối được (mạng?)';setSync('err');clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,15000)}
   syncBusy=false;
   if(syncAgain){syncAgain=false;syncSoon()}
 }
