@@ -1085,6 +1085,50 @@ const VERB='Động từ bất quy tắc';
 const idOf=en=>en.toLowerCase().replace(/[‘’']/g,"'").replace(/\s+/g,' ').trim();
 const ITEMS=(window.ITEMS||[]).map((x,i)=>({...x,id:x.d+'|'+idOf(x.en),i}));
 const byId={};ITEMS.forEach(x=>{byId[x.id]=x});
+
+/* ----- Sửa nghĩa cho những mục bị trùng đề (dùng gạch ngang, không dùng ngoặc vì ngoặc có chữ Anh bị ẩn) ----- */
+const EDIT={
+ '1|born':'Sinh ra — tính từ, chỉ một từ','7|be born':'Được sinh ra — cụm có động từ be',
+ '1|separated':'Ly thân — tính từ, chỉ một từ','4|be separated':'Ly thân — cụm có động từ be',
+ '1|divorced':'Ly hôn — tính từ, chỉ một từ','4|be divorced':'Ly hôn — cụm có động từ be','4|divorce':'Ly hôn — động từ / danh từ, không có đuôi -d',
+ '7|bite':'Cắn — chỉ một từ','6|sleep =':'Ngủ — chỉ một từ',
+ '5|say - said - said':'nói — nói ra điều gì','6|speak - spoke - spoken':'nói — nói chuyện, nói một ngôn ngữ'
+};
+const SAME=[
+ ['look after sb','take care of sb'],
+ ['talk to sb','talk with sb','speak to sb','speak with sb'],
+ ['enjoy + V-ing','like + V-ing','love to V'],
+ ['hang out with sb','go out with sb'],
+ ['trainers','sneakers'],['stomachache','stomach ache'],['nearsighted','myopic'],['an outgoing person','extrovert'],
+ ["What's going on with + danh từ?","What's wrong with + danh từ?"]
+];
+let VERBS=new Set();
+function setupExtras(){ // chạy sau khi các hàm chấm đã được định nghĩa
+  ITEMS.forEach(x=>{if(EDIT[x.id])x.vi=EDIT[x.id]});
+  ITEMS.forEach(x=>{
+    if(x.t===VERB)return;const own=new Set(altsOf(x.en).map(a=>a.join(' ')));
+    SAME.forEach(g=>{const keys=g.map(m=>tokens(m).join(' '));
+      if(keys.some(k=>own.has(k))){x.xm=(x.xm||[]).concat(g.filter((m,i)=>!own.has(keys[i])));x.xa=(x.xa||[]).concat(g.flatMap(m=>altsOf(m)))}});
+  });
+  VERBS=new Set(ITEMS.filter(x=>x.t===VERB).map(x=>x.en.split(/\s*[-\/]\s*/)[0].trim().toLowerCase()));
+  'go get take make spend look ask tell live stay meet hold call wait try need want enjoy stop start keep give hang talk speak say see come find bring leave turn put work play study help buy sell open close cook clean wash write read watch listen learn teach use visit lose win pay pass check join move send show share wear ride drive fall'.split(' ').forEach(v=>VERBS.add(v));
+}
+function formOf(x){
+  if(x.t===VERB||x.t==='Từ mới')return'';
+  const e=x.en.replace(/\\u0027/g,"'").toLowerCase(),sl=e.includes(' / ');
+  if(/\bhave\s*\/\s*has been\b|\bhas been\b|\bhave been \+?\s*v-?ing/.test(e))return'hiện tại hoàn thành tiếp diễn';
+  if(/\bhave you (ever|\+ v3)|\bhaven'?t\b.*v3|have\s*\/\s*has \+ v3/.test(e))return'hiện tại hoàn thành';
+  if(/\b(was|were)\b.*\bv3\b|\bwhy was\b/.test(e))return'bị động quá khứ (was/were + V3)';
+  if(/^be born\b|^born\b/.test(e))return'quá khứ: was / were born';
+  if(/^if i were/.test(e))return'câu điều kiện loại 2';
+  if(!sl&&/\b(was|were|had)\b|\bv2\b/.test(e))return'quá khứ đơn';
+  if(/\bbe\s*\+\s*v-?ing|^be going\b|\bis \+ v-?ing/.test(e))return'hiện tại tiếp diễn (be + V-ing)';
+  if(/\b(does|do|doesn'?t|don'?t)\b|\bs \+ has\b/.test(e))return'hiện tại đơn';
+  if(/^(be|am|is|are)\b/.test(e))return'hiện tại đơn, bắt đầu bằng be';
+  if(/^have\b/.test(e)&&!/^have you/.test(e))return'hiện tại đơn, bắt đầu bằng have';
+  if(VERBS.has(e.split(/\s+/)[0]))return'động từ nguyên mẫu';
+  return'';
+}
 const prog=id=>st.progress[id];
 const dayLog=()=>{const k=dayStr(today());return st.log[k]||(st.log[k]={ok:0,bad:0})};
 const DAYS=[1,2,3,4,5,6,7];
@@ -1120,7 +1164,7 @@ function verbAlts(en){
 const hasPH=en=>/[+]|\bsb\b|\bsth\b|\bV\b|\bS\b|ing\b|\.\.\.|…/.test(en)||VI_RX.test(en);
 function isSubseq(a,u){let i=0;for(const t of u){if(t===a[i])i++;if(i===a.length)return true}return false}
 function checkAnswer(it,inp){
-  const alts=it.t===VERB?verbAlts(it.en):altsOf(it.en);
+  const alts=it.t===VERB?verbAlts(it.en):altsOf(it.en).concat(it.xa||[]);
   if(!alts.length)return{self:true};
   const u=tokens(inp);if(!u.length)return{empty:true};
   const uj=u.join(' ');
@@ -1183,7 +1227,7 @@ function ensureProg(x){let p=prog(x.id);if(!p)p=st.progress[x.id]={b:0,d:today()
 function shell(inner){const pct=Math.round(100*S.done.size/S.total);
   return'<div class="row" style="margin-bottom:10px"><button data-a="exit" aria-label="Thoát">✕</button><div class="grow"><div class="bar"><i style="width:'+pct+'%"></i></div></div><span class="small mute">'+S.done.size+'/'+S.total+'</span></div>'+inner}
 function infoCard(x){
-  return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(noteVi(x)?'<div class="small mute" style="margin-top:6px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
+  return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(x.xm&&x.xm.length?'<div class="small mute" style="margin-top:6px">Cũng đúng: '+esc(x.xm.join(' · '))+'</div>':'')+(noteVi(x)?'<div class="small mute" style="margin-top:6px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
   '<div style="margin-top:8px"><span class="tag">'+esc(x.t)+'</span><span class="tag">Ngày '+x.d+'</span></div>'}
 function renderSession(){
   const v=$('#view');
@@ -1201,11 +1245,12 @@ function renderSession(){
   if(checkAnswer(x,'x').self){
     v.innerHTML=shell('<section class="card"><span class="tag">'+esc(x.t)+'</span>'+retry+'<div class="prompt">'+esc(promptVi(x))+'</div><p class="mute small">Công thức ngữ pháp: nhớ hoặc viết ra giấy, rồi bấm hiện đáp án để tự chấm.</p><button class="pri big" data-a="reveal">Hiện đáp án</button></section>');return}
   const hint=S.hint?'<div class="hint">'+esc(hintText(x))+'</div>':'';
-  v.innerHTML=shell('<section class="card"><span class="tag">'+esc(x.t)+'</span>'+retry+'<div class="prompt">'+esc(promptVi(x))+'</div>'+(x.t===VERB?'<div class="small mute">Gõ 3 dạng: V1 - V2 - V3</div>':'')+hint+
+  v.innerHTML=shell('<section class="card"><span class="tag">'+esc(x.t)+'</span>'+retry+'<div class="prompt">'+esc(promptVi(x))+'</div>'+(x.t===VERB?'<div class="small mute">Gõ 3 dạng: V1 - V2 - V3</div>':formLine(x))+hint+
     '<input type="text" id="ans" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Gõ tiếng Anh…" style="margin-top:10px">'+
     '<div class="row" style="margin-top:12px"><button class="pri grow" data-a="check">Kiểm tra</button><button data-a="hint">💡 Gợi ý</button><button data-a="giveup">Không nhớ</button></div></section>');
   const inp=$('#ans');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();actions.check()}})}
 }
+function formLine(x){const f=formOf(x);return f?'<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>':''}
 function feedbackHtml(x){
   const f=S.fb;
   const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
@@ -1244,6 +1289,7 @@ const actions={
   resetall:()=>{if(confirm('Xoá toàn bộ tiến độ học? Không thể hoàn tác.')){st.progress={};st.done={};st.log={};save();DAYPICK=null;render()}}
 };
 function clear(it,x){S.done.add(x.id);ensureProg(x).l=today();save()}
+setupExtras();
 document.addEventListener('change',e=>{if(e.target.id==='dayPick'){DAYPICK=Number(e.target.value);render()}});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const f=actions[el.dataset.a];if(f)f(el,e)});
 document.addEventListener('keydown',e=>{if(S&&S.phase==='fb'&&e.key==='Enter'&&document.activeElement&&document.activeElement.id!=='nextBtn'){e.preventDefault();actions.next()}});
