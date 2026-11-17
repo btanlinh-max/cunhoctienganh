@@ -2,37 +2,55 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sổ tay cụm từ</title>
 <style>
-:root{--bg:#f6f3ec;--card:#fff;--ink:#1f2a2e;--mute:#66757a;--line:#e3ded3;--pri:#0f6b5c;--pri-ink:#fff;--ok:#1b7f4b;--ok-soft:#dff3e7;--bad:#b3392f;--bad-soft:#fbe5e2;--warn:#8a5a00;--warn-soft:#fdf0d5;--r:14px}
+:root{--bg:#f6f3ec;--card:#fff;--ink:#1f2a2e;--mute:#66757a;--line:#e3ded3;--pri:#0f6b5c;--pri-ink:#fff;--ok:#1b7f4b;--ok-soft:#dff3e7;--bad:#b3392f;--bad-soft:#fbe5e2;--warn:#8a5a00;--warn-soft:#fdf0d5;--r:14px;
+  --fs:clamp(14px,min(2.7vh,4.4vw),23px)}
 @media (prefers-color-scheme:dark){:root{--bg:#121719;--card:#1b2326;--ink:#e8eeef;--mute:#9db0b4;--line:#2b383c;--pri:#3dbba4;--pri-ink:#06211c;--ok:#59d08d;--ok-soft:#173826;--bad:#ff8d82;--bad-soft:#3d1f1c;--warn:#f0b64a;--warn-soft:#3a2d10}}
-*{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:1.3rem;margin:4px 0 14px}h3{font-size:1.05rem;margin:0 0 .4em}
-.mute{color:var(--mute)}.small{font-size:.9rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
-button,select{font:inherit;color:inherit;border-radius:12px;border:1px solid var(--line);background:var(--card);padding:10px 14px;min-height:46px}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden}
+/* Một màn hình, không cuộn: khung cao đúng bằng cửa sổ; chỉ cuộn bên trong khi màn hình quá thấp */
+.wrap{height:100vh;height:100dvh;max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(8px,1.6vh,16px);
+  padding:max(10px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));overflow-y:auto;scrollbar-width:thin}
+h1{font-size:1.3em;margin:0;line-height:1.2}h3{font-size:1.05em;margin:0 0 .4em}
+.mute{color:var(--mute)}.small{font-size:.88em}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:clamp(10px,2vh,18px);margin:0}
+button,select{font:inherit;color:inherit;border-radius:12px;border:1px solid var(--line);background:var(--card);padding:.5em .9em;min-height:max(42px,2.5em)}
 button{cursor:pointer}button:hover{border-color:var(--pri)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
 .pri{background:var(--pri);color:var(--pri-ink);border-color:var(--pri);font-weight:650}
-.big{width:100%;min-height:54px;font-size:1.05rem}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>.grow{flex:1 1 140px}
+.big{width:100%;min-height:max(46px,2.8em);font-size:1.05em}
+.sm{min-height:36px;padding:.15em .7em;font-size:.88em}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>.grow{flex:1 1 130px}
 .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--pri);transition:width .25s}
-.prompt{font-size:1.5rem;font-weight:700;line-height:1.35;margin:10px 0}
-.ans{font-size:1.4rem;font-weight:700;margin:6px 0;overflow-wrap:anywhere}
-input[type=text]{font:inherit;font-size:1.2rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%;min-height:52px}
-.fb{border-radius:12px;padding:12px 14px;margin:12px 0}.fb.ok{background:var(--ok-soft);color:var(--ok)}.fb.bad{background:var(--bad-soft);color:var(--bad)}
-.hint{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:12px;margin:10px 0}
-.tag{display:inline-block;font-size:.75rem;padding:1px 9px;border-radius:99px;background:var(--line);color:var(--mute);margin-right:4px}
+.prompt{font-size:1.45em;font-weight:700;line-height:1.3;margin:.3em 0}
+.ans{font-size:1.3em;font-weight:700;margin:.2em 0;overflow-wrap:anywhere}
+input[type=text]{font:inherit;font-size:1.15em;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.5em .7em;width:100%;min-height:max(46px,2.7em)}
+.fb{border-radius:12px;padding:.6em .9em;margin:0}.fb.ok{background:var(--ok-soft);color:var(--ok)}.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.hint{background:var(--warn-soft);color:var(--warn);padding:.5em .8em;border-radius:12px;margin:.4em 0}
+.tag{display:inline-block;font-size:.75em;padding:1px 9px;border-radius:99px;background:var(--line);color:var(--mute);margin-right:4px}
 .tag.w{background:var(--warn-soft);color:var(--warn)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center}
-.stat b{display:block;font-size:1.4rem}.stat span{font-size:.8rem;color:var(--mute)}
-details{margin-top:6px}summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
-ul.w{margin:6px 0 0;padding-left:20px}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:9;font-size:.95rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.5em .2em;text-align:center}
+.stat b{display:block;font-size:1.35em;line-height:1.2}.stat span{font-size:.8em;color:var(--mute)}
+ul.w{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:.5em 0 0;padding:0}
+ul.w li{background:var(--bad-soft);color:var(--bad);border-radius:99px;padding:1px 10px;font-size:.85em;overflow-wrap:anywhere}
+ul.w li.more{background:none;color:var(--mute)}
+.home{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit}
+.col{display:flex;flex-direction:column;gap:inherit;min-height:0}
+@media (orientation:landscape) and (min-width:760px){.home{display:grid;grid-template-columns:1.05fr .95fr;align-content:center;align-items:start;gap:20px}}
+.sess{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit}
+.sess>.row.top{flex:none;flex-wrap:nowrap}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit;width:100%;max-width:760px;margin:0 auto;overflow-y:auto;scrollbar-width:thin}
+.stage>:first-child{margin-top:auto}.stage>:last-child{margin-bottom:auto}
+details.pop{position:relative;flex:none}
+details.pop>summary{cursor:pointer;min-height:40px;display:flex;align-items:center;color:var(--mute);list-style:none}
+details.pop>summary::-webkit-details-marker{display:none}
+.popbody{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92vw,420px);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.28);z-index:20}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:30;font-size:.95em}
 </style>
 </head>
 <body>
@@ -1204,15 +1222,18 @@ function vHome(v){
   const wrong=ITEMS.filter(x=>{const p=prog(x.id);return p&&p.b===0});
   const s=streak();
   v.innerHTML=(storageOK?'':'<div class="hint">⚠️ Trình duyệt đang chặn lưu dữ liệu, tiến độ sẽ mất khi đóng trang.</div>')+
-  '<h1>🧩 Sổ tay cụm từ'+(s?' <span class="tag w">🔥 '+s+' ngày liền</span>':'')+'</h1>'+
+  '<div class="topbar"><h1>🧩 Sổ tay cụm từ</h1>'+(s?'<span class="tag w">🔥 '+s+' ngày liền</span>':'')+'</div>'+
+  '<div class="home"><div class="col">'+
   '<section class="card"><h3>Hôm nay học ngày nào?</h3><div class="row"><select id="dayPick" aria-label="Chọn ngày">'+
    DAYS.map(d=>'<option value="'+d+'"'+(n===d?' selected':'')+'>Ngày '+d+(st.done[d]?' ✓':'')+'</option>').join('')+'</select><span class="mute small grow">'+nd+' mục của ngày '+n+' + '+due+' mục ôn lại từ các ngày trước</span></div>'+
-   '<div style="height:12px"></div><button class="pri big" data-a="start">▶ Bắt đầu ôn ngày '+n+'</button>'+
-   (all?'<div style="height:10px"></div><button class="big" data-a="reviewonly">Chỉ ôn lại mục đến hạn ('+all+')</button>':'')+
+   '<div style="height:10px"></div><button class="pri big" data-a="start">▶ Bắt đầu ôn ngày '+n+'</button>'+
+   (all?'<div style="height:8px"></div><button class="big" data-a="reviewonly">Chỉ ôn lại mục đến hạn ('+all+')</button>':'')+
   '</section>'+
   '<div class="stats"><div class="stat"><b>'+c.new+'</b><span>chưa học</span></div><div class="stat"><b>'+c.lrn+'</b><span>đang học</span></div><div class="stat"><b>'+c.mas+'</b><span>đã chắc</span></div></div>'+
-  (wrong.length?'<section class="card"><b>Đang hay sai ('+wrong.length+')</b><ul class="w">'+wrong.slice(0,12).map(x=>'<li>'+esc(x.en)+'</li>').join('')+(wrong.length>12?'<li class="mute">… và '+(wrong.length-12)+' mục nữa</li>':'')+'</ul></section>':'')+
-  '<section class="card"><details><summary>Sao lưu tiến độ</summary><p class="small mute">Tiến độ lưu trong trình duyệt của máy này. Đổi máy thì tải file sao lưu rồi khôi phục ở máy mới.</p><div class="row"><button class="grow" data-a="export">⬇️ Tải file sao lưu</button><button class="grow" data-a="importpick">⬆️ Khôi phục từ file</button><input type="file" id="importFile" accept=".json" hidden></div><div style="height:10px"></div><button data-a="resetall" style="color:var(--bad)">Xoá toàn bộ tiến độ</button></details></section>';
+  '</div><div class="col">'+
+  (wrong.length?'<section class="card"><b>Đang hay sai ('+wrong.length+')</b><ul class="w">'+wrong.slice(0,12).map(x=>'<li>'+esc(x.en)+'</li>').join('')+(wrong.length>12?'<li class="more">… và '+(wrong.length-12)+' mục nữa</li>':'')+'</ul></section>':'<section class="card mute small">Chưa có mục nào đang hay sai.</section>')+
+  '<details class="pop"><summary>⚙️ Sao lưu tiến độ</summary><div class="popbody"><p class="small mute" style="margin-top:0">Tiến độ lưu trong trình duyệt của máy này. Đổi máy thì tải file sao lưu rồi khôi phục ở máy mới.</p><div class="row"><button class="grow" data-a="export">⬇️ Tải file sao lưu</button><button class="grow" data-a="importpick">⬆️ Khôi phục từ file</button><input type="file" id="importFile" accept=".json" hidden></div><div style="height:8px"></div><button data-a="resetall" style="color:var(--bad)">Xoá toàn bộ tiến độ</button></div></details>'+
+  '</div></div>';
   const f=$('#importFile');if(f)f.addEventListener('change',e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d.progress!=='object')throw 0;Object.assign(st,d);save();toast('Đã khôi phục tiến độ');render()}catch(x){toast('File không hợp lệ')}};r.readAsText(fl)});
 }
 
@@ -1225,18 +1246,19 @@ function startDay(n){
 }
 function ensureProg(x){let p=prog(x.id);if(!p)p=st.progress[x.id]={b:0,d:today()};return p}
 function shell(inner){const pct=Math.round(100*S.done.size/S.total);
-  return'<div class="row" style="margin-bottom:10px"><button data-a="exit" aria-label="Thoát">✕</button><div class="grow"><div class="bar"><i style="width:'+pct+'%"></i></div></div><span class="small mute">'+S.done.size+'/'+S.total+'</span></div>'+inner}
+  return'<div class="sess"><div class="row top"><button class="sm" data-a="exit" aria-label="Thoát">✕</button><div class="grow"><div class="bar"><i style="width:'+pct+'%"></i></div></div><span class="small mute">'+S.done.size+'/'+S.total+'</span></div><div class="stage">'+inner+'</div></div>'}
 function infoCard(x){
-  return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(x.xm&&x.xm.length?'<div class="small mute" style="margin-top:6px">Cũng đúng: '+esc(x.xm.join(' · '))+'</div>':'')+(noteVi(x)?'<div class="small mute" style="margin-top:6px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
-  '<div style="margin-top:8px"><span class="tag">'+esc(x.t)+'</span><span class="tag">Ngày '+x.d+'</span></div>'}
+  return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(x.xm&&x.xm.length?'<div class="small mute" style="margin-top:4px">Cũng đúng: '+esc(x.xm.join(' · '))+'</div>':'')+(noteVi(x)?'<div class="small mute" style="margin-top:4px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
+  '<div class="row" style="margin-top:8px;gap:6px"><span class="tag">'+esc(x.t)+'</span><span class="tag">Ngày '+x.d+'</span><button class="sm" data-a="say" data-t="'+esc(x.en)+'" aria-label="Nghe" style="margin-left:auto">🔊 Nghe</button></div>'}
 function renderSession(){
   const v=$('#view');
   if(!S.queue.length){
     if(S.n)st.done[S.n]=1;DAYPICK=null;save();
     const tot=S.ok+S.bad,pct=tot?Math.round(100*S.ok/tot):100,w=[...S.wrongIds].map(id=>byId[id]);
-    v.innerHTML='<section class="card" style="text-align:center"><div style="font-size:3rem">🎉</div><h1>Xong rồi!</h1><p>Đúng ngay lần đầu: <b>'+S.ok+'</b>/'+tot+' ('+pct+'%)</p></section>'+
-     (w.length?'<section class="card"><b>Mục sai hôm nay ('+w.length+')</b><ul class="w">'+w.map(x=>'<li>'+esc(x.en)+'</li>').join('')+'</ul><p class="small mute">Mấy mục này sẽ quay lại vào ngày mai.</p></section>':'<p class="mute" style="text-align:center">Mai app sẽ cho ôn lại các mục đã học.</p>')+
-     '<button class="pri big" data-a="exit">Về trang chính</button>';return}
+    const wl=w.slice(0,10).map(x=>'<li>'+esc(x.en)+'</li>').join('')+(w.length>10?'<li class="more">… và '+(w.length-10)+' mục nữa</li>':'');
+    v.innerHTML='<div class="sess"><div class="stage"><section class="card" style="text-align:center"><div style="font-size:2.2em;line-height:1.1">🎉</div><h1>Xong rồi!</h1><p style="margin:.3em 0 0">Đúng ngay lần đầu: <b>'+S.ok+'</b>/'+tot+' ('+pct+'%)</p></section>'+
+     (w.length?'<section class="card"><b>Mục sai hôm nay ('+w.length+')</b><ul class="w">'+wl+'</ul><p class="small mute" style="margin:.5em 0 0">Mấy mục này sẽ quay lại vào ngày mai.</p></section>':'<p class="mute" style="text-align:center;margin:0">Mai app sẽ cho ôn lại các mục đã học.</p>')+
+     '<button class="pri big" data-a="exit">Về trang chính</button></div></div>';return}
   const it=S.queue[0],x=byId[it.id];if(!x){S.queue.shift();renderSession();return}
   if(S.phase==='fb'){v.innerHTML=shell(feedbackHtml(x));const nb=$('#nextBtn');if(nb)nb.focus();return}
   const retry=it.first?'':'<span class="tag w">làm lại</span>';
@@ -1254,7 +1276,7 @@ function formLine(x){const f=formOf(x);return f?'<div class="small mute">Dạng:
 function feedbackHtml(x){
   const f=S.fb;
   const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
-  return'<div class="fb '+(f.ok?'ok':'bad')+'"><b>'+head+'</b></div><section class="card">'+infoCard(x)+'<div class="row" style="margin-top:12px"><button data-a="say" data-t="'+esc(x.en)+'">🔊 Nghe</button></div></section>'+
+  return'<div class="fb '+(f.ok?'ok':'bad')+'"><b>'+head+'</b></div><section class="card">'+infoCard(x)+'</section>'+
     '<button class="pri big" id="nextBtn" data-a="next">Tiếp tục</button>';
 }
 /* lần trả lời đầu tiên quyết định lịch ôn các ngày sau; các lần làm lại chỉ để nhớ trong buổi */
