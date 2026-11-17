@@ -1197,6 +1197,9 @@ function checkAnswer(it,inp){
   const uj=u.join(' ');
   if(alts.some(a=>a.join(' ')===uj))return{ok:true};
   if(it.t!==VERB&&hasPH(it.en)&&alts.some(a=>isSubseq(a,u)&&u.length-a.length<=3))return{ok:true,extra:true};
+  // cụm cốt lõi đúng và đủ, thêm từ phía sau (to + nơi, with sb ...): tính đúng nhưng nói rõ phần thêm
+  if(it.t!==VERB){const hit=alts.find(a=>a.length>=2&&u.length>a.length&&u.length-a.length<=4&&a.every((t,i)=>u[i]===t));
+    if(hit)return{ok:true,ext:u.slice(hit.length).join(' ')}}
   return{ok:false};
 }
 const promptVi=it=>it.vi.split(/\.?\s*Lưu ý:/)[0].replace(/\([^)]*[A-Za-z]{3}[^)]*\)/g,'').replace(/\s+/g,' ').trim();
@@ -1256,8 +1259,21 @@ function startDay(n){
 function ensureProg(x){let p=prog(x.id);if(!p)p=st.progress[x.id]={b:0,d:today()};return p}
 function shell(inner){const pct=Math.round(100*S.done.size/S.total);
   return'<div class="sess"><div class="row top"><button class="sm" data-a="exit" aria-label="Thoát">✕</button><div class="grow"><div class="bar"><i style="width:'+pct+'%"></i></div></div><span class="small mute">'+S.done.size+'/'+S.total+'</span></div><div class="stage">'+inner+'</div></div>'}
+const _stem=t=>t.length>4?t.replace(/(ing|ed|es|s)$/,''):t;
+let _rel=null;
+function relatedOf(x){
+  if(x.t===VERB)return[];
+  if(!_rel){_rel=new Map();const pre=ITEMS.filter(y=>y.t!==VERB).map(y=>({y,al:altsOf(y.en).map(a=>a.map(_stem))}));
+    pre.forEach(({y,al})=>{const key=al[0]||[];if(key.length<2)return;const list=[];
+      pre.forEach(o=>{if(o.y.id===y.id||o.y.en===y.en)return;
+        const hay=o.al[0]||[];if(hay.length<=key.length)return;
+        for(let i=0;i+key.length<=hay.length;i++){if(key.every((t,j)=>hay[i+j]===t)){list.push(o.y);return}}});
+      _rel.set(y.id,list.slice(0,2))})}
+  return _rel.get(x.id)||[];
+}
 function infoCard(x){
   return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(x.xm&&x.xm.length?'<div class="small mute" style="margin-top:4px">Cũng đúng: '+esc(x.xm.join(' · '))+'</div>':'')+(noteVi(x)?'<div class="small mute" style="margin-top:4px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
+  (relatedOf(x).length?'<div class="small mute" style="margin-top:4px">Dùng trong mẫu: <b>'+esc(relatedOf(x).map(y=>y.en).join(' · '))+'</b></div>':'')+
   '<div class="row" style="margin-top:8px;gap:6px"><span class="tag">'+esc(x.t)+'</span><span class="tag">Ngày '+x.d+'</span><button class="sm" data-a="say" data-t="'+esc(x.en)+'" aria-label="Nghe" style="margin-left:auto">🔊 Nghe</button></div>'}
 function renderSession(){
   const v=$('#view');
@@ -1317,7 +1333,7 @@ function formLine(x){
   return out}
 function feedbackHtml(x){
   const f=S.fb;
-  const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
+  const head=f.ok?(f.ext?'Đúng cụm rồi! 👏 Bạn thêm phía sau: <b>'+esc(f.ext)+'</b> (phần thêm app không chấm, m tự kiểm tra nhé)':f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
   return'<div class="fb '+(f.ok?'ok':'bad')+'"><b>'+head+'</b></div><section class="card">'+infoCard(x)+'</section>'+
     (f.ok||f.self?'':'<button class="sm" data-a="countok" style="align-self:flex-start">✓ Tôi gõ khác nhưng vẫn đúng</button>')+
     '<button class="pri big" id="nextBtn" data-a="next">Tiếp tục</button>';
@@ -1337,7 +1353,7 @@ const actions={
   exit:()=>{S=null;render();window.scrollTo(0,0)},
   say:el=>speak(el.dataset.t),
   hint:()=>{S.hint=1;const a=$('#ans'),val=a?a.value:'';render();const b=$('#ans');if(b){b.value=val;b.focus()}},
-  check:()=>{const x=byId[S.queue[0].id],inp=$('#ans');if(!inp)return;const r=checkAnswer(x,inp.value);if(r.empty){inp.focus();return}record(!!r.ok,{near:r.near,extra:r.extra,given:inp.value})},
+  check:()=>{const x=byId[S.queue[0].id],inp=$('#ans');if(!inp)return;const r=checkAnswer(x,inp.value);if(r.empty){inp.focus();return}record(!!r.ok,{near:r.near,extra:r.extra,ext:r.ext,given:inp.value})},
   giveup:()=>record(false,{}),
   countok:()=>{const it=S.queue[0],x=byId[it.id],p=ensureProg(x),f=S.fb;
     if(it.first&&f&&!f.ok){p.b=Math.min(4,(f.pb||0)+1);p.d=today()+INT[p.b];p.u=Date.now();S.bad--;S.ok++;S.wrongIds.delete(x.id);const l=dayLog();l.bad=Math.max(0,l.bad-1);l.ok++}
