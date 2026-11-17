@@ -1106,7 +1106,10 @@ const ITEMS=(window.ITEMS||[]).map((x,i)=>({...x,id:x.d+'|'+idOf(x.en),i}));
 const byId={};ITEMS.forEach(x=>{byId[x.id]=x});
 
 /* ----- Sửa nghĩa cho những mục bị trùng đề (dùng gạch ngang, không dùng ngoặc vì ngoặc có chữ Anh bị ẩn) ----- */
+const EDITEN={};
 const EDIT={
+ '1|get married':'Kết hôn (với ai) — lấy vợ, lấy chồng',
+ "1|be nervous about + danh từ":'Lo lắng, hồi hộp về ai hoặc việc gì đó',
  '1|born':'Sinh ra — tính từ, chỉ một từ','7|be born':'Được sinh ra — cụm có động từ be',
  '1|separated':'Ly thân — tính từ, chỉ một từ','4|be separated':'Ly thân — cụm có động từ be',
  '1|divorced':'Ly hôn — tính từ, chỉ một từ','4|be divorced':'Ly hôn — cụm có động từ be','4|divorce':'Ly hôn — động từ / danh từ, không có đuôi -d',
@@ -1115,6 +1118,7 @@ const EDIT={
  '5|say - said - said':'nói — nói ra điều gì','6|speak - spoke - spoken':'nói — nói chuyện, nói một ngôn ngữ'
 };
 const SAME=[
+ ['worry about sb / sth','be nervous about sb / sth','nervous about sb / sth'],
  ['look after sb','take care of sb'],
  ['talk to sb','talk with sb','speak to sb','speak with sb'],
  ['enjoy + V-ing','like + V-ing','love to V'],
@@ -1122,9 +1126,10 @@ const SAME=[
  ['trainers','sneakers'],['stomachache','stomach ache'],['nearsighted','myopic'],['an outgoing person','extrovert'],
  ["What's going on with + danh từ?","What's wrong with + danh từ?"]
 ];
-const EXTRA={'1|elder / older / younger sister hoặc brother':['siblings','brothers and sisters'],"1|doesn't + v + much":["don't + V + much"]};
+const EXTRA={'1|elder / older / younger sister hoặc brother':['siblings','brothers and sisters'],"1|doesn't + v + much":["don't + V + much"],'1|get married':['get married to sb','get married to']};
 let VERBS=new Set();
 function setupExtras(){ // chạy sau khi các hàm chấm đã được định nghĩa
+  ITEMS.forEach(x=>{if(EDITEN[x.id])x.en=EDITEN[x.id]});
   ITEMS.forEach(x=>{if(EDIT[x.id])x.vi=EDIT[x.id]});
   ITEMS.forEach(x=>{
     if(x.t===VERB)return;const own=new Set(altsOf(x.en).map(a=>a.join(' ')));
@@ -1281,14 +1286,35 @@ const POSX={'really':'câu cảm thán (hỏi lại: thật sao?)','only colleag
 const POSNU={"get married":"cụm động từ — HÀNH ĐỘNG kết hôn (lúc làm đám cưới)","married to":"cụm tính từ — TRẠNG THÁI đã kết hôn với ai","married":"tính từ — TRẠNG THÁI đã kết hôn","engaged":"tính từ — TRẠNG THÁI đã đính hôn","single":"tính từ — TRẠNG THÁI độc thân","widowed":"tính từ — TRẠNG THÁI góa","separated":"tính từ — TRẠNG THÁI ly thân","divorced":"tính từ — TRẠNG THÁI đã ly hôn","divorce":"động từ — HÀNH ĐỘNG ly hôn (cũng là danh từ: sự ly hôn)","dead":"tính từ — TRẠNG THÁI đã chết","die":"động từ — HÀNH ĐỘNG chết, qua đời","died of":"cụm động từ — HÀNH ĐỘNG qua đời vì …","death":"danh từ — sự qua đời","be born":"cụm động từ bị động — HÀNH ĐỘNG được sinh ra","born":"dạng V3 của động từ — được sinh ra","call after":"cụm động từ — HÀNH ĐỘNG đặt tên theo ai","pass away":"cụm động từ — HÀNH ĐỘNG qua đời (cách nói nhẹ nhàng)","propose (to sb)":"động từ — HÀNH ĐỘNG cầu hôn","legally ended":"cụm tính từ — TRẠNG THÁI đã kết thúc hợp pháp"};
 function posLine(x){
   if(x.t!=='Từ mới')return'';
-  const key=x.en.toLowerCase().replace(/\s*=\s*$/,'').trim();
-  if(POSNU[key])return POSNU[key];
-  if(POSX[key])return POSX[key];
+  const key0=x.en.toLowerCase().replace(/\s*=\s*$/,'').trim(),key=key0.replace(/\s*\(.*?\)\s*/g,' ').trim();
+  if(POSNU[key0])return POSNU[key0];if(POSNU[key])return POSNU[key];
+  if(POSX[key0])return POSX[key0];if(POSX[key])return POSX[key];
   const tail=(x.ipa||'').replace(/^.*\//,'').trim(),m=tail.match(/^(n|v|a|adj|adv|prep|conj|pron)\b(.*)$/i);
   if(m){const k=m[1].toLowerCase();return POSN[k]+(/P2/i.test(m[2])?' (dạng V3)':'')}
   return'';
 }
-function formLine(x){const pl=posLine(x);if(pl)return'<div class="small mute">Loại từ: <b>'+esc(pl)+'</b></div>';const f=formOf(x);return f?'<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>':''}
+function slotLine(x){
+  if(x.t===VERB||x.t==='Từ mới')return'';
+  const e=x.en.replace(/\\u0027/g,"'"),vi=promptVi(x),parts=[],add=t=>{if(t&&!parts.includes(t))parts.push(t)};
+  if(/\b(sb|somebody|someone)\b/i.test(e))add('ai (sb)');
+  if(/\b(sth|something)\b/i.test(e))add('việc / vật gì đó (sth)');
+  if(/\bV-?ing\b/.test(e))add('động từ thêm -ing');
+  if(/\bV-?ed\b|\bV2\b/.test(e))add('động từ dạng quá khứ (V2)');
+  if(/\bV3\b/.test(e))add('động từ dạng V3');
+  if(/\bto V(?![-\w])|(^|[\s+(,])V(?![-\w])/.test(e))add('động từ nguyên mẫu');
+  if(/(^|[\s+(,])S(?![-\w])/.test(e))add('chủ ngữ');
+  if(/\badj(-er)?\b/.test(e))add('tính từ');
+  (e.match(/[^+/(),.?…]*[À-ỹ][^+/(),.?…]*/g)||[]).forEach(g=>{g=g.trim();if(g&&g.length<28)add(g)});
+  if(!parts.length)return'';
+  const tellsSlot=/(^|\s)(ai|gì|việc|cái|người|nơi)(\s|$|[,.?)])/i.test(vi.replace(/\.\.\.|…/g,' '));
+  return(/\.\.\.|…/.test(vi)||!tellsSlot)?parts.join(' · '):'';
+}
+function formLine(x){
+  const pl=posLine(x);let out='';
+  if(pl)out+='<div class="small mute">Loại từ: <b>'+esc(pl)+'</b></div>';
+  else{const f=formOf(x);if(f)out+='<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>'}
+  const sl=slotLine(x);if(sl)out+='<div class="small mute">Chỗ trống: <b>'+esc(sl)+'</b></div>';
+  return out}
 function feedbackHtml(x){
   const f=S.fb;
   const head=f.ok?(f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
