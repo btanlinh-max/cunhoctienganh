@@ -23,6 +23,7 @@ button{cursor:pointer}button:hover{border-color:var(--pri)}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
 .pri{background:var(--pri);color:var(--pri-ink);border-color:var(--pri);font-weight:650}
 .big{width:100%;min-height:max(46px,2.8em);font-size:1.05em}
+.row.nowrap{flex-wrap:nowrap}.row.nowrap>button{padding:.5em .7em;white-space:nowrap}.row.nowrap>.grow{flex:1 1 auto;min-width:0}
 .sm{min-height:36px;padding:.15em .7em;font-size:.88em}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>.grow{flex:1 1 130px}
 .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--pri);transition:width .25s}
@@ -41,11 +42,10 @@ ul.w li{background:var(--bad-soft);color:var(--bad);border-radius:99px;padding:1
 ul.w li.more{background:none;color:var(--mute)}
 .home{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit}
 .col{display:flex;flex-direction:column;gap:inherit;min-height:0}
-@media (orientation:landscape) and (min-width:760px){.home{display:grid;grid-template-columns:1.05fr .95fr;align-content:center;align-items:start;gap:20px}}
+@media (orientation:landscape) and (min-width:760px){.home{display:grid;grid-template-columns:1.05fr .95fr;align-content:start;align-items:start;gap:20px}}
 .sess{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit}
 .sess>.row.top{flex:none;flex-wrap:nowrap}
 .stage{flex:1;min-height:0;display:flex;flex-direction:column;gap:inherit;width:100%;max-width:760px;margin:0 auto;overflow-y:auto;scrollbar-width:thin}
-.stage>:first-child{margin-top:auto}.stage>:last-child{margin-bottom:auto}
 details.pop{position:relative;flex:none}
 details.pop>summary{cursor:pointer;min-height:40px;display:flex;align-items:center;color:var(--mute);list-style:none}
 details.pop>summary::-webkit-details-marker{display:none}
@@ -1269,7 +1269,7 @@ function renderSession(){
   const hint=S.hint?'<div class="hint">'+esc(hintText(x))+'</div>':'';
   v.innerHTML=shell('<section class="card"><span class="tag">'+esc(x.t)+'</span>'+retry+'<div class="prompt">'+esc(promptVi(x))+'</div>'+(x.t===VERB?'<div class="small mute">Gõ 3 dạng: V1 - V2 - V3</div>':formLine(x))+hint+
     '<input type="text" id="ans" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Gõ tiếng Anh…" style="margin-top:10px">'+
-    '<div class="row" style="margin-top:12px"><button class="pri grow" data-a="check">Kiểm tra</button><button data-a="hint">💡 Gợi ý</button><button data-a="giveup">Không nhớ</button></div></section>');
+    '<div class="row nowrap" style="margin-top:12px"><button class="pri grow" data-a="check">Kiểm tra</button><button data-a="hint">💡 Gợi ý</button><button data-a="giveup">Không nhớ</button></div></section>');
   const inp=$('#ans');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();actions.check()}})}
 }
 function formLine(x){const f=formOf(x);return f?'<div class="small mute">Dạng: <b>'+esc(f)+'</b></div>':''}
