@@ -50,6 +50,7 @@ details.pop{position:relative;flex:none}
 details.pop>summary{cursor:pointer;min-height:40px;display:flex;align-items:center;color:var(--mute);list-style:none}
 details.pop>summary::-webkit-details-marker{display:none}
 .popbody{max-height:82vh;overflow-y:auto;position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92vw,420px);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.28);z-index:20}
+.use{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}.ue{margin-top:6px;line-height:1.35}.up{font-weight:700;color:var(--pri);overflow-wrap:anywhere}
 .codebox{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px 8px;user-select:all;overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:30;font-size:.95em}
 </style>
@@ -1106,6 +1107,9 @@ const ITEMS=(window.ITEMS||[]).map((x,i)=>({...x,id:x.d+'|'+idOf(x.en),i}));
 const byId={};ITEMS.forEach(x=>{byId[x.id]=x});
 
 /* ----- Sửa nghĩa cho những mục bị trùng đề (dùng gạch ngang, không dùng ngoặc vì ngoặc có chữ Anh bị ẩn) ----- */
+const USE={"go on honeymoon":{"ok":["in","at","to","with"],"u":[{"vi":"Đi hưởng tuần trăng mật ở","p":"go on honeymoon in + thành phố / nước · at + địa điểm","e":"They went on honeymoon in Italy."},{"vi":"Sắp đi hưởng tuần trăng mật ở","p":"be going on honeymoon to + địa điểm","e":"We are going on honeymoon to Bali next month."}]},"get married":{"ok":["to","in","on","at"],"u":[{"vi":"Kết hôn với ai","p":"get married to sb","e":"She got married to a doctor."},{"vi":"Kết hôn khi nào, ở đâu","p":"get married in + năm / nơi · on + ngày","e":"They got married in Hue in 2022."}]},"live alone":{"ok":["in"],"u":[{"vi":"Sống một mình ở đâu","p":"live alone in + nơi","e":"He lives alone in a small flat."}]},"look for sb / sth":{"ok":["in","on"],"u":[{"vi":"Tìm ai hoặc cái gì ở đâu","p":"look for sb / sth in + nơi","e":"I am looking for my keys in the kitchen."}]},"get to + địa điểm":{"ok":["at"],"u":[{"vi":"Đến nơi lúc mấy giờ","p":"get to + nơi + at + giờ","e":"I got to work at eight."},{"vi":"Về đến nhà (không có to)","p":"get home","e":"I got home late."}]},"arrive at + địa điểm cụ thể":{"ok":["at"],"u":[{"vi":"Đến nơi lúc mấy giờ","p":"arrive at + nơi + at + giờ","e":"The train arrived at the station at six."}]},"arrive in + thành phố / quốc gia":{"ok":["in","on"],"u":[{"vi":"Đến thành phố hoặc nước vào ngày nào","p":"arrive in + nơi + on + ngày","e":"She arrived in Hanoi on Monday."}]},"spend time with sb":{"ok":["with","on"],"u":[{"vi":"Dành thời gian cho việc gì","p":"spend time on + danh từ / V-ing","e":"I spend a lot of time on my homework."}]},"died of":{"ok":["in"],"u":[{"vi":"Qua đời vào năm nào, ở đâu","p":"die in + năm / nơi","e":"He died in 2019 in Hanoi."}]},"die":{"u":[{"vi":"Qua đời vì bệnh gì","p":"die of + bệnh","e":"He died of cancer."}]},"death":{"u":[{"vi":"Cái chết của ai","p":"the death of + sb","e":"The death of her husband made her very sad."}]},"heart attack":{"u":[{"vi":"Bị đau tim","p":"have a heart attack","e":"He had a heart attack last year."},{"vi":"Qua đời vì đau tim","p":"die of a heart attack","e":"His father died of a heart attack."}]},"funeral":{"u":[{"vi":"Đi dự đám tang","p":"go to a funeral","e":"I went to my uncle's funeral."}]},"wedding":{"u":[{"vi":"Tổ chức đám cưới","p":"have / hold a wedding","e":"They held a big wedding in July."},{"vi":"Đi dự đám cưới","p":"go to a wedding","e":"I went to my cousin's wedding."}]},"honeymoon":{"u":[{"vi":"Đi hưởng tuần trăng mật","p":"go on honeymoon","e":"They went on honeymoon to Bali."}]},"had a baby":{"ok":["in","on"],"u":[{"vi":"Sinh con vào năm nào","p":"have a baby in + năm","e":"She had a baby in 2020."}]},"weigh":{"u":[{"vi":"Nặng bao nhiêu","p":"weigh + số cân","e":"The baby weighs 3 kg."}]},"birthday":{"u":[{"vi":"Vào ngày sinh nhật","p":"on + sb's birthday","e":"We had a party on her birthday."}]},"married":{"u":[{"vi":"Đã kết hôn với ai","p":"be married to sb","e":"She is married to a teacher."}]},"married to":{"ok":["for"],"u":[{"vi":"Đã kết hôn với ai được bao lâu","p":"be married to sb for + khoảng thời gian","e":"She has been married to him for ten years."}]},"separated":{"u":[{"vi":"Ly thân với ai","p":"be separated from sb","e":"He is separated from his wife."}]},"divorced":{"u":[{"vi":"Ly hôn với ai","p":"be divorced from sb · get divorced from sb","e":"She got divorced from her husband."}]},"old age":{"ok":["in"],"u":[{"vi":"Khi về già","p":"in + one's old age","e":"He lives alone in his old age."}]},"together with sb":{"u":[{"vi":"Làm gì cùng với ai","p":"V + together with sb","e":"I live together with my parents."}]},"a pair of gloves":{"u":[{"vi":"Đeo một đôi găng tay","p":"wear a pair of gloves","e":"She is wearing a pair of red gloves."}]},"a pair of shoes":{"u":[{"vi":"Mua một đôi giày","p":"buy a pair of shoes","e":"I bought a pair of black shoes."}]},"worry about sb / sth":{"u":[{"vi":"Lo lắng về việc làm gì","p":"worry about + V-ing","e":"Don't worry about making mistakes."}]},"think about sth":{"u":[{"vi":"Nghĩ đến việc làm gì","p":"think about + V-ing","e":"I am thinking about changing my job."}]},"be nervous about + danh từ":{"u":[{"vi":"Lo lắng về việc làm gì","p":"be nervous about + V-ing","e":"I'm nervous about taking the exam."}]}};
+const ukey=x=>x.en.toLowerCase().replace(/\s*=\s*$/,'').trim();
+const PREP=new Set('to in on at for with about of from by into over'.split(' '));
 const EDITEN={};
 const EDIT={
  '1|get married':'Kết hôn (với ai) — lấy vợ, lấy chồng',
@@ -1196,9 +1200,10 @@ function checkAnswer(it,inp){
   const u=tokens(inp);if(!u.length)return{empty:true};
   const uj=u.join(' ');
   if(alts.some(a=>a.join(' ')===uj))return{ok:true};
-  if(it.t!==VERB&&hasPH(it.en)&&alts.some(a=>isSubseq(a,u)&&u.length-a.length<=3))return{ok:true,extra:true};
-  // cụm cốt lõi đúng và đủ, thêm từ phía sau (to + nơi, with sb ...): tính đúng nhưng nói rõ phần thêm
-  if(it.t!==VERB){const hit=alts.find(a=>a.length>=2&&u.length>a.length&&u.length-a.length<=4&&a.every((t,i)=>u[i]===t));
+  const okp=(USE[ukey(it)]||{}).ok||[],badPrep=a=>u.some(t=>PREP.has(t)&&!a.includes(t)&&!okp.includes(t));
+  if(it.t!==VERB&&hasPH(it.en)&&alts.some(a=>isSubseq(a,u)&&u.length-a.length<=3&&!badPrep(a)))return{ok:true,extra:true};
+  // cụm cốt lõi đúng và đủ, thêm phía sau: chỉ đúng nếu giới từ thêm vào nằm trong danh sách cho phép của mục đó
+  if(it.t!==VERB){const hit=alts.find(a=>a.length>=2&&u.length>a.length&&u.length-a.length<=4&&a.every((t,i)=>u[i]===t)&&!badPrep(a));
     if(hit)return{ok:true,ext:u.slice(hit.length).join(' ')}}
   return{ok:false};
 }
@@ -1273,7 +1278,7 @@ function relatedOf(x){
 }
 function infoCard(x){
   return'<div class="ans">'+esc(x.en)+'</div><div>'+esc(promptVi(x))+'</div>'+(x.xm&&x.xm.length?'<div class="small mute" style="margin-top:4px">Cũng đúng: '+esc(x.xm.join(' · '))+'</div>':'')+(noteVi(x)?'<div class="small mute" style="margin-top:4px">Lưu ý: '+esc(noteVi(x))+'</div>':'')+
-  (relatedOf(x).length?'<div class="small mute" style="margin-top:4px">Dùng trong mẫu: <b>'+esc(relatedOf(x).map(y=>y.en).join(' · '))+'</b></div>':'')+
+  (USE[ukey(x)]&&USE[ukey(x)].u&&USE[ukey(x)].u.length?'<div class="use"><b class="small">Cách dùng để đặt câu</b>'+USE[ukey(x)].u.map(e=>'<div class="ue"><div class="small mute">'+esc(e.vi)+'</div><div class="up">'+esc(e.p)+'</div><div class="small">'+esc(e.e)+'</div></div>').join('')+'</div>':relatedOf(x).length?'<div class="small mute" style="margin-top:4px">Dùng trong mẫu: <b>'+esc(relatedOf(x).map(y=>y.en).join(' · '))+'</b></div>':'')+
   '<div class="row" style="margin-top:8px;gap:6px"><span class="tag">'+esc(x.t)+'</span><span class="tag">Ngày '+x.d+'</span><button class="sm" data-a="say" data-t="'+esc(x.en)+'" aria-label="Nghe" style="margin-left:auto">🔊 Nghe</button></div>'}
 function renderSession(){
   const v=$('#view');
@@ -1333,7 +1338,7 @@ function formLine(x){
   return out}
 function feedbackHtml(x){
   const f=S.fb;
-  const head=f.ok?(f.ext?'Đúng cụm rồi! 👏 Bạn thêm phía sau: <b>'+esc(f.ext)+'</b> (phần thêm app không chấm, m tự kiểm tra nhé)':f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
+  const head=f.ok?(f.ext?'Đúng rồi! 👏 Bạn dùng thêm phía sau: <b>'+esc(f.ext)+'</b> (xem các cách dùng bên dưới)':f.near?'Gần đúng — chú ý chính tả!':f.extra?'Đúng rồi! 👏 (bạn thêm từ cho đủ câu)':'Đúng rồi! 👏'):(f.given?'Chưa đúng. Bạn gõ: <b>'+esc(f.given)+'</b>':'Không sao, nhớ lại nhé');
   return'<div class="fb '+(f.ok?'ok':'bad')+'"><b>'+head+'</b></div><section class="card">'+infoCard(x)+'</section>'+
     (f.ok||f.self?'':'<button class="sm" data-a="countok" style="align-self:flex-start">✓ Tôi gõ khác nhưng vẫn đúng</button>')+
     '<button class="pri big" id="nextBtn" data-a="next">Tiếp tục</button>';
