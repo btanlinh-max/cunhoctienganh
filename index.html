@@ -1323,12 +1323,14 @@ document.addEventListener('keydown',e=>{if(S&&S.phase==='fb'&&e.key==='Enter'&&d
 /* ===== Đồng bộ qua Firebase Realtime Database (gọi thẳng REST, không cần thư viện) =====
    Dữ liệu nằm ở  <địa chỉ>/sotay/<mã đồng bộ>.json . Mã dài và ngẫu nhiên đóng vai trò chìa khoá. */
 const SYNC_URL='https://sotaycumtu-default-rtdb.asia-southeast1.firebasedatabase.app';   // dán địa chỉ Realtime Database vào đây để khỏi phải nhập trên từng máy
+const SYNC_CODE='jma3yagqf46f2i4dj35zum82';   // mã cố định: máy nào mở trang cũng tự nối vào cùng một tiến độ
 const SYKEY='sotay_sync';
 let SY=(()=>{try{return JSON.parse(localStorage.getItem(SYKEY))||{}}catch(e){return{}}})();
 let syncState='',syncErr='',syncTimer=null,syncBusy=false,syncAgain=false;
 const syncUrl=()=>String(SYNC_URL||SY.url||'').trim().replace(/\/+$/,'');
-const syncOn=()=>!!(syncUrl()&&SY.code);
-const syncEndpoint=()=>syncUrl()+'/sotay/'+encodeURIComponent(SY.code)+'.json';
+const syncCode=()=>String(SYNC_CODE||SY.code||'');
+const syncOn=()=>!!(syncUrl()&&syncCode());
+const syncEndpoint=()=>syncUrl()+'/sotay/'+encodeURIComponent(syncCode())+'.json';
 const syncLabel=()=>syncOn()?({ok:'☁️ đã đồng bộ',busy:'☁️ đang đồng bộ…',err:'☁️ chưa đồng bộ: '+(syncErr||'lỗi')})[syncState]||'☁️':'';
 function setSync(x){syncState=x;const e=$('#syncState');if(e)e.textContent=syncLabel()}
 function mergeInto(local,remote){
@@ -1366,6 +1368,7 @@ async function syncNow(){
 }
 function newCode(){const a=new Uint8Array(18);(self.crypto||window.crypto).getRandomValues(a);return Array.from(a,b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('')}
 function syncPanel(){
+  if(syncOn()&&SYNC_CODE)return '<div class="small"><b>Đồng bộ giữa các máy</b> <span class="mute">luôn bật</span><br><span class="mute">Máy nào mở trang này cũng dùng chung một tiến độ, không cần làm gì thêm.</span></div><div class="row" style="margin-top:8px"><button class="grow sm" data-a="syncnow">Đồng bộ ngay</button></div>';
   if(syncOn())return '<div class="small"><b>Đồng bộ giữa các máy</b> <span class="mute">đang bật</span><br>Mã của m (giữ kín): <span class="codebox">'+esc(SY.code)+'</span><br><span class="mute">Trên máy khác: mở mục này, nhập đúng mã trên rồi bấm Bật đồng bộ.</span></div><div class="row" style="margin-top:8px"><button class="grow sm" data-a="syncnow">Đồng bộ ngay</button><button class="grow sm" data-a="syncoff">Ngắt đồng bộ</button></div>';
   return '<div class="small"><b>Đồng bộ giữa các máy</b>'+(SYNC_URL?'':'<input type="text" id="syncUrl" placeholder="Địa chỉ Firebase Realtime Database" value="'+esc(SY.url||'')+'" style="margin:6px 0 0;min-height:40px;font-size:.95em" autocomplete="off" autocapitalize="none" spellcheck="false">')+
     '<input type="text" id="syncCode" placeholder="Mã đồng bộ (để trống = tạo mã mới)" style="margin:6px 0;min-height:40px;font-size:.95em" autocomplete="off" autocapitalize="none" spellcheck="false"></div><button class="pri big" data-a="syncon">Bật đồng bộ</button>';
